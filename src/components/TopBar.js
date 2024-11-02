@@ -4,13 +4,14 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
 const TopBarContainer = styled.div`
-  width: 100%;
-  height: 30px; // Ajusta esta altura como prefieras
+  width: 96.9%;
+  height: 50px;
   background-color: #007BFF; // Azul
   display: flex;
   justify-content: flex-end;
   align-items: center;
   padding: 0 20px;
+  position: relative;
 `;
 
 const MenuIcon = styled.div`
@@ -30,8 +31,8 @@ const MenuIcon = styled.div`
 
 const DropdownMenu = styled.div`
   position: absolute;
-  top: 30px;
-  right: 20px;
+  top: 45px;
+  right: 40px;
   background: white;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   border-radius: 5px;
@@ -51,11 +52,36 @@ const DropdownItem = styled(Link)`
   }
 `;
 
-const TopBar = ({ menuItems }) => {
+const GestionLinksContainer = styled.div`
+  display: flex;
+  gap: 20px;
+  margin-right: auto; 
+`;
+
+const GestionLink = styled(Link)`
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+const TopBar = ({ menuItems, gestionLinks }) => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
   return (
     <TopBarContainer>
+      {gestionLinks && (
+        <GestionLinksContainer>
+          {gestionLinks.map((link, index) => (
+            <GestionLink key={index} to={link.path}>
+              {link.label}
+            </GestionLink>
+          ))}
+        </GestionLinksContainer>
+      )}
       <MenuIcon onClick={() => setIsMenuOpen(!isMenuOpen)}>
         <div></div>
         <div></div>

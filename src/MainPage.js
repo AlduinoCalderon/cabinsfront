@@ -7,6 +7,7 @@ const MainPage = () => {
     <div>
       <TopBar menuItems={[{ label: 'Gestión', path: '/gestion' }]} />
     </div>
+    
   );
 };
 
