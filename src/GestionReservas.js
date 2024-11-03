@@ -71,6 +71,31 @@ const StatusCell = styled.td`
   color: black;
 `;
 
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  tr:hover {
+    background-color: #f1f1f1;
+  }
+`;
+
 const GestionReservas = () => {
   const [reservas, setReservas] = useState([]);
   const [cabanas, setCabanas] = useState([]);
@@ -152,9 +177,17 @@ const GestionReservas = () => {
       } else {
         setReservas([...reservas, data.Booking]);
       }
-      setNewReserva({ user_id: '', cabin_id: '', start_date: null, end_date: null, status: 'pending', discount: '', note: '' });
-      setIsEditing(false);
+
+      // Agregar esta sección para actualizar la lista de reservas
+      return fetch('http://localhost:8001/bookings');
+    })
+    .then(response => response.json())
+    .then(data => {
+      setReservas(data); // Actualiza la lista de reservas después de agregar
     });
+
+    setNewReserva({ user_id: '', cabin_id: '', start_date: null, end_date: null, status: 'pending', discount: '', note: '' });
+    setIsEditing(false);
   };
 
   const handleDeleteReserva = (id) => {
@@ -201,7 +234,7 @@ const GestionReservas = () => {
     <Container ref={refContainer}>
       <TopBar 
         menuItems={[{ label: 'Inicio', path: '/' }]}
-        gestionLinks={[
+        gestionLinks={[ 
           { label: 'Gestión de Usuarios', path: '/gestion/usuarios' },
           { label: 'Gestión de Cabañas', path: '/gestion/cabanas' },
           { label: 'Gestión de Reservas', path: '/gestion/reservas' }
@@ -247,91 +280,94 @@ const GestionReservas = () => {
           <option value="canceled">Cancelada</option>
         </Select>
 
-        <Label>Descuento (%):</Label>
-        <input type="number" name="discount" placeholder="Descuento (%)" value={newReserva.discount} onChange={handleInputChange} min="0" max="100" />
-
         <Label>Notas:</Label>
-        <TextArea name="note" placeholder="Notas" value={newReserva.note} onChange={handleInputChange} />
+        <TextArea name="note" value={newReserva.note} onChange={handleInputChange} />
+
+        <Label>Descuento:</Label>
+        <input
+          type="number"
+          name="discount"
+          value={newReserva.discount}
+          onChange={handleInputChange}
+          min="0"
+          max="100"
+        />
       </FormSection>
-      <Button onClick={handleAddOrUpdateReserva} disabled={!isFormValid()}>{isEditing ? 'Modificar Reserva' : 'Agregar Reserva'}</Button>
+
+      <Button onClick={handleAddOrUpdateReserva} disabled={!isFormValid()}>
+        {isEditing ? 'Actualizar Reserva' : 'Agregar Reserva'}
+      </Button>
 
       <FormSection>
         <Label>Filtrar por:</Label>
         <Select value={filterField} onChange={handleFilterChange}>
-          <option value="">Seleccionar filtro</option>
+          <option value="">Ver todas las reservas</option>
+          <option value="id">ID de Reserva</option>
           <option value="user">Usuario</option>
           <option value="cabin">Cabaña</option>
           <option value="date">Fecha</option>
-          <option value="id">ID Reserva</option>
         </Select>
 
-        {filterField === 'date' ? (
+        {filterField && (
           <>
-            <Label>Selecciona una fecha:</Label>
-            <DatePicker
-              selected={filterValue ? new Date(filterValue) : null}
-              onChange={date => setFilterValue(date)}
-              inline
-            />
-          </>
-        ) : filterField && (
-          <Select value={filterValue} onChange={handleFilterValueChange}>
-            <option value="">Selecciona un valor</option>
-            {filterField === 'user' && usuarios.map(user => (
-              <option key={user.user_id} value={user.user_id}>{`${user.first_name} (${user.email})`}</option>
-            ))}
-            {filterField === 'cabin' && cabanas.map(cabin => (
-              <option key={cabin.cabin_id} value={cabin.cabin_id}>{cabin.name}</option>
-            ))}
-            {filterField === 'id' && (
-              <input type="number" value={filterValue} onChange={handleFilterValueChange} placeholder="ID Reserva" />
+            <Label>Valor del filtro:</Label>
+            {filterField === 'date' ? (
+              <DatePicker
+                selected={filterValue ? new Date(filterValue) : null}
+                onChange={(date) => setFilterValue(date ? date.toISOString().split('T')[0] : '')}
+                inline
+              />
+            ) : (
+              <Select value={filterValue} onChange={handleFilterValueChange}>
+                <option value="">Selecciona un valor</option>
+                {filterField === 'user' && usuarios.map(user => (
+                  <option key={user.user_id} value={user.user_id}>{`${user.first_name} (${user.email})`}</option>
+                ))}
+                {filterField === 'cabin' && cabanas.map(cabin => (
+                  <option key={cabin.cabin_id} value={cabin.cabin_id}>{cabin.name}</option>
+                ))}
+                {filterField === 'id' && reservas.map(reserva => (
+                  <option key={reserva.booking_id} value={reserva.booking_id}>{reserva.booking_id}</option>
+                ))}
+              </Select>
             )}
-          </Select>
+          </>
         )}
       </FormSection>
 
-      <table>
+      <Table>
         <thead>
           <tr>
-            <th>ID Reserva</th>
+            <th>ID de Reserva</th>
             <th>Usuario</th>
             <th>Cabaña</th>
-            <th>Fechas</th>
+            <th>Fecha de Inicio</th>
+            <th>Fecha de Fin</th>
             <th>Estado</th>
-            <th>Nota</th>
+            <th>Notas</th>
             <th>Descuento</th>
             <th>Acciones</th>
           </tr>
         </thead>
-      <tbody>
-        {filteredReservas.map(reserva => {
-          // Buscar el usuario correspondiente a la reserva
-          const usuario = usuarios.find(user => user.user_id === reserva.user_id) || {};
-          const nombreUsuario = usuario.first_name || 'Usuario no encontrado';
-          const emailUsuario = usuario.email || '';
-
-          // Buscar la cabaña correspondiente a la reserva
-          const cabaña = cabanas.find(cabin => cabin.cabin_id === reserva.cabin_id) || {};
-          const nombreCabana = cabaña.name || 'Cabaña no encontrada';
-
-          return (
+        <tbody>
+          {filteredReservas.map(reserva => (
             <tr key={reserva.booking_id}>
               <td>{reserva.booking_id}</td>
-              <td>{`${nombreUsuario} (${emailUsuario})`}</td>
-              <td>{nombreCabana}</td>
-              <td>{`${new Date(reserva.start_date).toLocaleDateString()} - ${new Date(reserva.end_date).toLocaleDateString()}`}</td>
+              <td>{usuarios.find(user => user.user_id === reserva.user_id)?.first_name || 'Usuario no encontrado'}</td>
+              <td>{cabanas.find(cabin => cabin.cabin_id === reserva.cabin_id)?.name || 'Cabaña no encontrada'}</td>
+              <td>{new Date(reserva.start_date).toLocaleDateString()}</td>
+              <td>{new Date(reserva.end_date).toLocaleDateString()}</td>
               <StatusCell status={reserva.status}>{reserva.status}</StatusCell>
               <td>{reserva.note}</td>
-              <td>{reserva.discount}</td>
+              <td>{reserva.discount ? `${reserva.discount}%` : 'N/A'}</td>
               <td>
-                <Button onClick={() => handleEditReserva(reserva)}>Modificar</Button>
-                <Button onClick={() => handleDeleteReserva(reserva.booking_id)}>Eliminar</Button>
+                <button onClick={() => handleEditReserva(reserva)}>Editar</button>
+                <button onClick={() => handleDeleteReserva(reserva.booking_id)}>Eliminar</button>
               </td>
             </tr>
-          );
-        })}
-      </tbody>
-      </table>
+          ))}
+        </tbody>
+      </Table>
     </Container>
   );
 };
