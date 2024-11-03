@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import TopBar from './components/TopBar';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { addDays } from 'date-fns';
 import styled from 'styled-components';
 
 const Container = styled.div`
@@ -304,12 +303,22 @@ const GestionReservas = () => {
             <th>Acciones</th>
           </tr>
         </thead>
-        <tbody>
-          {filteredReservas.map(reserva => (
+      <tbody>
+        {filteredReservas.map(reserva => {
+          // Buscar el usuario correspondiente a la reserva
+          const usuario = usuarios.find(user => user.user_id === reserva.user_id) || {};
+          const nombreUsuario = usuario.first_name || 'Usuario no encontrado';
+          const emailUsuario = usuario.email || '';
+
+          // Buscar la cabaña correspondiente a la reserva
+          const cabaña = cabanas.find(cabin => cabin.cabin_id === reserva.cabin_id) || {};
+          const nombreCabana = cabaña.name || 'Cabaña no encontrada';
+
+          return (
             <tr key={reserva.booking_id}>
               <td>{reserva.booking_id}</td>
-              <td>{`${reservas.user_id} (${reservas.email})`}</td>
-              <td>{reserva.cabin_id}</td>
+              <td>{`${nombreUsuario} (${emailUsuario})`}</td>
+              <td>{nombreCabana}</td>
               <td>{`${new Date(reserva.start_date).toLocaleDateString()} - ${new Date(reserva.end_date).toLocaleDateString()}`}</td>
               <StatusCell status={reserva.status}>{reserva.status}</StatusCell>
               <td>{reserva.note}</td>
@@ -319,8 +328,9 @@ const GestionReservas = () => {
                 <Button onClick={() => handleDeleteReserva(reserva.booking_id)}>Eliminar</Button>
               </td>
             </tr>
-          ))}
-        </tbody>
+          );
+        })}
+      </tbody>
       </table>
     </Container>
   );
