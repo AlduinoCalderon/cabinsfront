@@ -10,6 +10,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   padding: 20px;
+
   @media (min-width: 768px) {
     max-width: 800px;
     margin: auto;
@@ -55,11 +56,13 @@ const Button = styled.button`
   border: none;
   border-radius: 4px;
   cursor: pointer;
+
   &:disabled {
     background-color: #ccc;
     cursor: not-allowed;
   }
 `;
+
 const StatusCell = styled.td`
   background-color: ${props => {
     switch (props.status) {
@@ -70,12 +73,11 @@ const StatusCell = styled.td`
       case 'canceled':
         return 'red';
       default:
-        return 'white'; // O el color que prefieras para el estado por defecto
+        return 'white';
     }
   }};
-  color: black; // Mantener el texto siempre negro
+  color: black;
 `;
-
 
 const GestionReservas = () => {
   const [reservas, setReservas] = useState([]);
@@ -110,20 +112,30 @@ const GestionReservas = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if (name === 'discount') {
-      if (value < 0 || value > 100) return; // Validación de descuento
+      if (value < 0 || value > 100) return;
     }
     setNewReserva((prevReserva) => ({ ...prevReserva, [name]: value }));
   };
 
-  const handleDateChange = (date) => {
-    setNewReserva((prevReserva) => ({ ...prevReserva, start_date: date, end_date: date }));
+  const handleStartDateChange = (date) => {
+    setNewReserva((prevReserva) => ({
+      ...prevReserva,
+      start_date: date,
+      end_date: date ? addDays(date, 1) : null // Asegura que la fecha de fin sea un día después de la fecha de inicio
+    }));
+  };
+
+  const handleEndDateChange = (date) => {
+    setNewReserva((prevReserva) => ({ ...prevReserva, end_date: date }));
   };
 
   const isFormValid = () => {
     return (
-      newReserva.user_id && 
+      newReserva.user_id &&
       newReserva.cabin_id &&
-      newReserva.start_date
+      newReserva.start_date &&
+      newReserva.end_date &&
+      newReserva.start_date <= newReserva.end_date
     );
   };
 
@@ -229,10 +241,18 @@ const GestionReservas = () => {
       </FormSection>
 
       <FormSection>
-        <Label>Fecha:</Label>
+        <Label>Fecha de Inicio:</Label>
         <DatePicker
           selected={newReserva.start_date}
-          onChange={handleDateChange}
+          onChange={handleStartDateChange}
+          inline
+        />
+
+        <Label>Fecha de Fin:</Label>
+        <DatePicker
+          selected={newReserva.end_date}
+          onChange={handleEndDateChange}
+          minDate={newReserva.start_date}
           inline
         />
       </FormSection>
@@ -248,15 +268,12 @@ const GestionReservas = () => {
         <Label>Descuento (%):</Label>
         <Input type="number" name="discount" placeholder="Descuento (%)" value={newReserva.discount} onChange={handleInputChange} min="0" max="100" />
 
-        <Label>Nota:</Label>
-        <TextArea name="note" placeholder="Nota" value={newReserva.note} onChange={handleInputChange} rows="4" cols="50" />
-
-        {newReserva.booking_id ? (
-          <Button onClick={handleSaveUpdate}>Guardar Cambios</Button>
-        ) : (
-          <Button onClick={handleAddReserva} disabled={!isFormValid()}>Guardar Nueva Reserva</Button>
-        )}
+        <Label>Notas:</Label>
+        <TextArea name="note" placeholder="Notas" value={newReserva.note} onChange={handleInputChange} />
       </FormSection>
+
+      <Button onClick={handleAddReserva} disabled={!isFormValid()}>Agregar Reserva</Button>
+      <Button onClick={handleSaveUpdate}>Actualizar Reserva</Button>
 
       <FormSection>
         <Label>Filtrar por:</Label>
@@ -266,24 +283,16 @@ const GestionReservas = () => {
           <option value="cabin">Cabaña</option>
           <option value="date">Fecha</option>
         </Select>
-        {filterField === 'user' && (
-          <Select value={filterValue} onChange={handleFilterValueChange}>
-            <option value="">Seleccionar usuario</option>
-            {usuarios.map(user => (
-              <option key={user.user_id} value={user.user_id}>{`${user.first_name} (${user.email})`}</option>
-            ))}
-          </Select>
-        )}
-        {filterField === 'cabin' && (
-          <Select value={filterValue} onChange={handleFilterValueChange}>
-            <option value="">Seleccionar cabaña</option>
-            {cabanas.map(cabin => (
-              <option key={cabin.cabin_id} value={cabin.cabin_id}>{cabin.name}</option>
-            ))}
-          </Select>
-        )}
-        {filterField === 'date' && (
-          <Input type="date" value={filterValue} onChange={handleFilterValueChange} />
+
+        {filterField && (
+          <>
+            <Label>{filterField === 'date' ? 'Selecciona una fecha' : 'Ingresa el valor'}</Label>
+            {filterField === 'date' ? (
+              <DatePicker selected={filterValue ? new Date(filterValue) : null} onChange={date => setFilterValue(date)} />
+            ) : (
+              <Input type="text" value={filterValue} onChange={handleFilterValueChange} />
+            )}
+          </>
         )}
       </FormSection>
 
@@ -291,33 +300,30 @@ const GestionReservas = () => {
         <thead>
           <tr>
             <th>ID Reserva</th>
-            <th>Nombre</th>
-            <th>Email</th>
-            <th>Cabaña Reservada</th>
-            <th>Descuento</th>
-            <th>Notas</th>
+            <th>Usuario</th>
+            <th>Cabaña</th>
+            <th>Fechas</th>
             <th>Estado</th>
+            <th>Nota</th>
+            <th>Descuento</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           {filteredReservas.map(reserva => (
-            <React.Fragment key={reserva.booking_id}>
-              <tr>
-                <td>{reserva.booking_id}</td>
-                <td>{usuarios.find(user => user.user_id === reserva.user_id)?.first_name}</td>
-                <td>{usuarios.find(user => user.user_id === reserva.user_id)?.email}</td>
-                <td>{cabanas.find(cabin => cabin.cabin_id === reserva.cabin_id)?.name}</td>
-                <td>{reserva.discount && reserva.discount !== 0 ? reserva.discount : '-'}</td>
-                <td>{reserva.note}</td>
-                <StatusCell status={reserva.status}>{reserva.status}</StatusCell>
-              </tr>
-              <tr>
-                <td colSpan="6">
-                  <Button onClick={() => handleUpdateReserva(reserva.booking_id)}>Editar</Button>
-                  <Button onClick={() => handleDeleteReserva(reserva.booking_id)}>Eliminar</Button>
-                </td>
-              </tr>
-            </React.Fragment>
+            <tr key={reserva.booking_id}>
+              <td>{reserva.booking_id}</td>
+              <td>{`${reserva.user_id} (${reserva.email})`}</td>
+              <td>{reserva.cabin_id}</td>
+              <td>{`${new Date(reserva.start_date).toLocaleDateString()} - ${new Date(reserva.end_date).toLocaleDateString()}`}</td>
+              <StatusCell status={reserva.status}>{reserva.status}</StatusCell>
+              <td>{reserva.note}</td>
+              <td>{reserva.discount}</td>
+              <td>
+                <Button onClick={() => handleUpdateReserva(reserva.booking_id)}>Editar</Button>
+                <Button onClick={() => handleDeleteReserva(reserva.booking_id)}>Eliminar</Button>
+              </td>
+            </tr>
           ))}
         </tbody>
       </table>
