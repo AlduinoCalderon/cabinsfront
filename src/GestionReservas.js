@@ -1,5 +1,5 @@
 // src/GestionReservas.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import TopBar from './components/TopBar';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -26,13 +26,6 @@ const FormSection = styled.div`
 const Label = styled.label`
   margin-bottom: 5px;
   font-weight: bold;
-`;
-
-const Input = styled.input`
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
 `;
 
 const Select = styled.select`
@@ -86,14 +79,16 @@ const GestionReservas = () => {
   const [newReserva, setNewReserva] = useState({
     user_id: '',
     cabin_id: '',
-    start_date: new Date(),
-    end_date: addDays(new Date(), 1),
+    start_date: null,
+    end_date: null,
     status: 'pending',
     discount: '',
     note: ''
   });
   const [filterField, setFilterField] = useState('');
   const [filterValue, setFilterValue] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const refContainer = useRef(null);
 
   useEffect(() => {
     fetch('http://localhost:8001/bookings')
@@ -117,16 +112,15 @@ const GestionReservas = () => {
     setNewReserva((prevReserva) => ({ ...prevReserva, [name]: value }));
   };
 
-  const handleStartDateChange = (date) => {
-    setNewReserva((prevReserva) => ({
-      ...prevReserva,
-      start_date: date,
-      end_date: date ? addDays(date, 1) : null // Asegura que la fecha de fin sea un día después de la fecha de inicio
-    }));
-  };
-
-  const handleEndDateChange = (date) => {
-    setNewReserva((prevReserva) => ({ ...prevReserva, end_date: date }));
+  const handleDateChange = (date) => {
+    if (!newReserva.start_date || (newReserva.start_date && newReserva.end_date)) {
+      setNewReserva({ ...newReserva, start_date: date, end_date: null });
+    } else {
+      setNewReserva((prevReserva) => ({
+        ...prevReserva,
+        end_date: date
+      }));
+    }
   };
 
   const isFormValid = () => {
@@ -139,10 +133,14 @@ const GestionReservas = () => {
     );
   };
 
-  const handleAddReserva = () => {
+  const handleAddOrUpdateReserva = () => {
     if (!isFormValid()) return alert("Por favor, completa todos los campos obligatorios.");
-    fetch('http://localhost:8001/bookings', {
-      method: 'POST',
+
+    const method = isEditing ? 'PUT' : 'POST';
+    const url = isEditing ? `http://localhost:8001/bookings/${newReserva.booking_id}` : 'http://localhost:8001/bookings';
+
+    fetch(url, {
+      method: method,
       headers: {
         'Content-Type': 'application/json'
       },
@@ -150,8 +148,13 @@ const GestionReservas = () => {
     })
     .then(response => response.json())
     .then(data => {
-      setReservas([...reservas, data.Booking]);
-      setNewReserva({ user_id: '', cabin_id: '', start_date: new Date(), end_date: addDays(new Date(), 1), status: 'pending', discount: '', note: '' });
+      if (isEditing) {
+        setReservas(reservas.map(reserva => reserva.booking_id === newReserva.booking_id ? newReserva : reserva));
+      } else {
+        setReservas([...reservas, data.Booking]);
+      }
+      setNewReserva({ user_id: '', cabin_id: '', start_date: null, end_date: null, status: 'pending', discount: '', note: '' });
+      setIsEditing(false);
     });
   };
 
@@ -160,30 +163,14 @@ const GestionReservas = () => {
       method: 'DELETE'
     })
     .then(() => {
-      setReservas(reservas.map(reserva => reserva.booking_id === id ? { ...reserva, is_active: false } : reserva));
+      setReservas(reservas.filter(reserva => reserva.booking_id !== id));
     });
   };
 
-  const handleUpdateReserva = (id) => {
-    const updatedReserva = reservas.find(reserva => reserva.booking_id === id);
-    if (updatedReserva) {
-      setNewReserva(updatedReserva);
-    }
-  };
-
-  const handleSaveUpdate = () => {
-    fetch(`http://localhost:8001/bookings/${newReserva.booking_id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(newReserva)
-    })
-    .then(response => response.json())
-    .then(data => {
-      setReservas(reservas.map(reserva => reserva.booking_id === newReserva.booking_id ? newReserva : reserva));
-      setNewReserva({ user_id: '', cabin_id: '', start_date: new Date(), end_date: addDays(new Date(), 1), status: 'pending', discount: '', note: '' });
-    });
+  const handleEditReserva = (reserva) => {
+    setNewReserva(reserva);
+    setIsEditing(true);
+    refContainer.current.scrollIntoView({ behavior: 'smooth' });
   };
 
   const handleFilterChange = (e) => {
@@ -197,21 +184,22 @@ const GestionReservas = () => {
 
   const filteredReservas = reservas.filter(reserva => {
     if (!reserva.is_active) return false;
-    const selectedDate = new Date(filterValue);
-    const isDateMatching = selectedDate >= new Date(reserva.start_date) && selectedDate <= new Date(reserva.end_date);
-    
-    if (filterField === 'user') {
+
+    if (filterField === 'user' && filterValue) {
       return reserva.user_id === parseInt(filterValue);
-    } else if (filterField === 'cabin') {
+    } else if (filterField === 'cabin' && filterValue) {
       return reserva.cabin_id === parseInt(filterValue);
-    } else if (filterField === 'date') {
-      return isDateMatching;
+    } else if (filterField === 'date' && filterValue) {
+      const selectedDate = new Date(filterValue);
+      return selectedDate >= new Date(reserva.start_date) && selectedDate <= new Date(reserva.end_date);
+    } else if (filterField === 'id' && filterValue) {
+      return reserva.booking_id === parseInt(filterValue);
     }
     return true;
   });
 
   return (
-    <Container>
+    <Container ref={refContainer}>
       <TopBar 
         menuItems={[{ label: 'Inicio', path: '/' }]}
         gestionLinks={[
@@ -241,18 +229,13 @@ const GestionReservas = () => {
       </FormSection>
 
       <FormSection>
-        <Label>Fecha de Inicio:</Label>
+        <Label>Selecciona fechas:</Label>
         <DatePicker
           selected={newReserva.start_date}
-          onChange={handleStartDateChange}
-          inline
-        />
-
-        <Label>Fecha de Fin:</Label>
-        <DatePicker
-          selected={newReserva.end_date}
-          onChange={handleEndDateChange}
-          minDate={newReserva.start_date}
+          onChange={handleDateChange}
+          selectsStart
+          startDate={newReserva.start_date}
+          endDate={newReserva.end_date}
           inline
         />
       </FormSection>
@@ -266,14 +249,12 @@ const GestionReservas = () => {
         </Select>
 
         <Label>Descuento (%):</Label>
-        <Input type="number" name="discount" placeholder="Descuento (%)" value={newReserva.discount} onChange={handleInputChange} min="0" max="100" />
+        <input type="number" name="discount" placeholder="Descuento (%)" value={newReserva.discount} onChange={handleInputChange} min="0" max="100" />
 
         <Label>Notas:</Label>
         <TextArea name="note" placeholder="Notas" value={newReserva.note} onChange={handleInputChange} />
       </FormSection>
-
-      <Button onClick={handleAddReserva} disabled={!isFormValid()}>Agregar Reserva</Button>
-      <Button onClick={handleSaveUpdate}>Actualizar Reserva</Button>
+      <Button onClick={handleAddOrUpdateReserva} disabled={!isFormValid()}>{isEditing ? 'Modificar Reserva' : 'Agregar Reserva'}</Button>
 
       <FormSection>
         <Label>Filtrar por:</Label>
@@ -282,17 +263,31 @@ const GestionReservas = () => {
           <option value="user">Usuario</option>
           <option value="cabin">Cabaña</option>
           <option value="date">Fecha</option>
+          <option value="id">ID Reserva</option>
         </Select>
 
-        {filterField && (
+        {filterField === 'date' ? (
           <>
-            <Label>{filterField === 'date' ? 'Selecciona una fecha' : 'Ingresa el valor'}</Label>
-            {filterField === 'date' ? (
-              <DatePicker selected={filterValue ? new Date(filterValue) : null} onChange={date => setFilterValue(date)} />
-            ) : (
-              <Input type="text" value={filterValue} onChange={handleFilterValueChange} />
-            )}
+            <Label>Selecciona una fecha:</Label>
+            <DatePicker
+              selected={filterValue ? new Date(filterValue) : null}
+              onChange={date => setFilterValue(date)}
+              inline
+            />
           </>
+        ) : filterField && (
+          <Select value={filterValue} onChange={handleFilterValueChange}>
+            <option value="">Selecciona un valor</option>
+            {filterField === 'user' && usuarios.map(user => (
+              <option key={user.user_id} value={user.user_id}>{`${user.first_name} (${user.email})`}</option>
+            ))}
+            {filterField === 'cabin' && cabanas.map(cabin => (
+              <option key={cabin.cabin_id} value={cabin.cabin_id}>{cabin.name}</option>
+            ))}
+            {filterField === 'id' && (
+              <input type="number" value={filterValue} onChange={handleFilterValueChange} placeholder="ID Reserva" />
+            )}
+          </Select>
         )}
       </FormSection>
 
@@ -313,14 +308,14 @@ const GestionReservas = () => {
           {filteredReservas.map(reserva => (
             <tr key={reserva.booking_id}>
               <td>{reserva.booking_id}</td>
-              <td>{`${reserva.user_id} (${reserva.email})`}</td>
+              <td>{`${reservas.user_id} (${reservas.email})`}</td>
               <td>{reserva.cabin_id}</td>
               <td>{`${new Date(reserva.start_date).toLocaleDateString()} - ${new Date(reserva.end_date).toLocaleDateString()}`}</td>
               <StatusCell status={reserva.status}>{reserva.status}</StatusCell>
               <td>{reserva.note}</td>
               <td>{reserva.discount}</td>
               <td>
-                <Button onClick={() => handleUpdateReserva(reserva.booking_id)}>Editar</Button>
+                <Button onClick={() => handleEditReserva(reserva)}>Modificar</Button>
                 <Button onClick={() => handleDeleteReserva(reserva.booking_id)}>Eliminar</Button>
               </td>
             </tr>
