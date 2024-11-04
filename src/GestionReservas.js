@@ -96,6 +96,16 @@ const Table = styled.table`
   }
 `;
 
+const Legend = styled.p`
+  margin-top: 10px;
+  font-weight: bold;
+`;
+
+const CostLabel = styled.div`
+  margin-top: 20px;
+  font-weight: bold;
+`;
+
 const GestionReservas = () => {
   const [reservas, setReservas] = useState([]);
   const [cabanas, setCabanas] = useState([]);
@@ -112,6 +122,7 @@ const GestionReservas = () => {
   const [filterField, setFilterField] = useState('');
   const [filterValue, setFilterValue] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [excludedDates, setExcludedDates] = useState([]);
   const refContainer = useRef(null);
 
   useEffect(() => {
@@ -128,24 +139,70 @@ const GestionReservas = () => {
       .then(data => setUsuarios(data));
   }, []);
 
+  useEffect(() => {
+    if (newReserva.cabin_id) {
+      const reservasCabana = reservas.filter(reserva => reserva.cabin_id === parseInt(newReserva.cabin_id));
+      const fechasExcluidas = [];
+      reservasCabana.forEach(reserva => {
+        let startDate = new Date(reserva.start_date);
+        let endDate = new Date(reserva.end_date);
+        endDate.setDate(endDate.getDate() - 1); // Exclude the end date
+
+        while (startDate <= endDate) {
+          fechasExcluidas.push(new Date(startDate));
+          startDate.setDate(startDate.getDate() + 1);
+        }
+      });
+      setExcludedDates(fechasExcluidas);
+    }
+  }, [newReserva.cabin_id, reservas]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'discount') {
+    if (name === 'cabin_id' && value !== newReserva.cabin_id) {
+      setNewReserva((prevReserva) => ({
+        ...prevReserva,
+        cabin_id: value,
+        start_date: null, // Reinicia la fecha de inicio
+        end_date: null    // Reinicia la fecha de fin
+      }));
+    } else if (name === 'discount') {
       if (value < 0 || value > 100) return;
     }
     setNewReserva((prevReserva) => ({ ...prevReserva, [name]: value }));
   };
-
+  
+  const hasExcludedDates = (startDate, endDate) => {
+    const dateRange = [];
+    let currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      dateRange.push(currentDate.toISOString().split('T')[0]); // Guardamos la fecha en formato YYYY-MM-DD
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    return excludedDates.some(date => dateRange.includes(date.toISOString().split('T')[0]));
+  };
+  
   const handleDateChange = (date) => {
     if (!newReserva.start_date || (newReserva.start_date && newReserva.end_date)) {
       setNewReserva({ ...newReserva, start_date: date, end_date: null });
     } else {
+      const [start, end] = [newReserva.start_date, date].sort((a, b) => a - b);
+      
+      // Verificar si hay fechas excluidas en el rango
+      if (hasExcludedDates(start, end)) {
+        alert("Las fechas seleccionadas incluyen días ya ocupados. Por favor, selecciona otras fechas.");
+        setNewReserva({ ...newReserva, start_date: null, end_date: null });
+        return;
+      }
+  
       setNewReserva((prevReserva) => ({
         ...prevReserva,
-        end_date: date
+        start_date: start,
+        end_date: end
       }));
     }
   };
+  
 
   const isFormValid = () => {
     return (
@@ -153,51 +210,54 @@ const GestionReservas = () => {
       newReserva.cabin_id &&
       newReserva.start_date &&
       newReserva.end_date &&
-      newReserva.start_date <= newReserva.end_date
+      newReserva.start_date < newReserva.end_date
     );
   };
 
   const handleAddOrUpdateReserva = () => {
-    if (!isFormValid()) return alert("Por favor, completa todos los campos obligatorios.");
+    if (!isFormValid()) return alert("Por favor, completa todos los campos obligatorios o corrige las fechas.");
 
     const method = isEditing ? 'PUT' : 'POST';
     const url = isEditing ? `http://localhost:8001/bookings/${newReserva.booking_id}` : 'http://localhost:8001/bookings';
 
     fetch(url, {
-      method: method,
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(newReserva)
+        method: method,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newReserva)
     })
     .then(response => response.json())
     .then(data => {
-      if (isEditing) {
-        setReservas(reservas.map(reserva => reserva.booking_id === newReserva.booking_id ? newReserva : reserva));
-      } else {
-        setReservas([...reservas, data.Booking]);
-      }
+        if (isEditing) {
+            setReservas(reservas.map(reserva => reserva.booking_id === newReserva.booking_id ? newReserva : reserva));
+        } else {
+            setReservas([...reservas, data.Booking]);
+        }
 
-      // Agregar esta sección para actualizar la lista de reservas
-      return fetch('http://localhost:8001/bookings');
+        // Actualiza la lista de reservas después de agregar
+        return fetch('http://localhost:8001/bookings');
     })
     .then(response => response.json())
     .then(data => {
-      setReservas(data); // Actualiza la lista de reservas después de agregar
+        setReservas(data);
     });
 
     setNewReserva({ user_id: '', cabin_id: '', start_date: null, end_date: null, status: 'pending', discount: '', note: '' });
     setIsEditing(false);
   };
 
-  const handleDeleteReserva = (id) => {
+
+ const handleDeleteReserva = (id) => {
+  if (window.confirm("¿Estás seguro de que deseas eliminar esta reserva?")) {
     fetch(`http://localhost:8001/bookings/${id}`, {
       method: 'DELETE'
     })
     .then(() => {
       setReservas(reservas.filter(reserva => reserva.booking_id !== id));
     });
-  };
+  }
+};
 
   const handleEditReserva = (reserva) => {
     setNewReserva(reserva);
@@ -212,6 +272,23 @@ const GestionReservas = () => {
 
   const handleFilterValueChange = (e) => {
     setFilterValue(e.target.value);
+  };
+
+  const calculateCost = () => {
+    if (!newReserva.cabin_id || !newReserva.start_date || !newReserva.end_date) {
+      return null;
+    }
+
+    const selectedCabin = cabanas.find(cabin => cabin.cabin_id === parseInt(newReserva.cabin_id));
+    if (!selectedCabin) {
+      return null;
+    }
+
+    const nights = (new Date(newReserva.end_date) - new Date(newReserva.start_date)) / (1000 * 60 * 60 * 24);
+    const discount = newReserva.discount ? (newReserva.discount / 100) : 0;
+    const cost = selectedCabin.cost_per_night * nights * (1 - discount);
+
+    return cost.toFixed(2);
   };
 
   const filteredReservas = reservas.filter(reserva => {
@@ -229,6 +306,10 @@ const GestionReservas = () => {
     }
     return true;
   });
+
+  const nights = newReserva.start_date && newReserva.end_date ? 
+    (new Date(newReserva.end_date) - new Date(newReserva.start_date)) / (1000 * 60 * 60 * 24) : 
+    0;
 
   return (
     <Container ref={refContainer}>
@@ -268,8 +349,18 @@ const GestionReservas = () => {
           selectsStart
           startDate={newReserva.start_date}
           endDate={newReserva.end_date}
+          minDate={new Date()}
+          excludeDates={excludedDates}
+          disabled={!newReserva.cabin_id}
           inline
         />
+        <Legend>
+          {newReserva.start_date && !newReserva.end_date
+            ? 'Fecha de llegada capturada, por favor seleccione fecha de salida.'
+            : `Reserva de ${nights + 1} días ${nights} ${nights === 1 ? 'noche' : 'noches'}`}
+        </Legend>
+
+
       </FormSection>
 
       <FormSection>
@@ -293,6 +384,12 @@ const GestionReservas = () => {
           max="100"
         />
       </FormSection>
+
+      {isFormValid() && (
+        <CostLabel>
+          Costo de la reserva: ${calculateCost()}
+        </CostLabel>
+      )}
 
       <Button onClick={handleAddOrUpdateReserva} disabled={!isFormValid()}>
         {isEditing ? 'Actualizar Reserva' : 'Agregar Reserva'}
@@ -319,7 +416,7 @@ const GestionReservas = () => {
               />
             ) : (
               <Select value={filterValue} onChange={handleFilterValueChange}>
-                <option value="">Selecciona un valor</option>
+                <option value="">Ver todo</option>
                 {filterField === 'user' && usuarios.map(user => (
                   <option key={user.user_id} value={user.user_id}>{`${user.first_name} (${user.email})`}</option>
                 ))}
