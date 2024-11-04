@@ -106,6 +106,16 @@ const CostLabel = styled.div`
   font-weight: bold;
 `;
 
+const Tooltip = styled.div`
+  position: absolute;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 5px;
+  border-radius: 4px;
+  display: none;
+  z-index: 10;
+`;
+
 const GestionReservas = () => {
   const [reservas, setReservas] = useState([]);
   const [cabanas, setCabanas] = useState([]);
@@ -124,6 +134,7 @@ const GestionReservas = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [excludedDates, setExcludedDates] = useState([]);
   const refContainer = useRef(null);
+  const tooltipRef = useRef(null);
 
   useEffect(() => {
     fetch('http://localhost:8001/bookings')
@@ -141,7 +152,7 @@ const GestionReservas = () => {
 
   useEffect(() => {
     if (newReserva.cabin_id) {
-      const reservasCabana = reservas.filter(reserva => reserva.cabin_id === parseInt(newReserva.cabin_id));
+      const reservasCabana = reservas.filter(reserva => reserva.cabin_id === parseInt(newReserva.cabin_id) && reserva.status !== 'canceled' && (!isEditing || reserva.booking_id !== newReserva.booking_id));
       const fechasExcluidas = [];
       reservasCabana.forEach(reserva => {
         let startDate = new Date(reserva.start_date);
@@ -155,7 +166,7 @@ const GestionReservas = () => {
       });
       setExcludedDates(fechasExcluidas);
     }
-  }, [newReserva.cabin_id, reservas]);
+  }, [newReserva.cabin_id, reservas, isEditing, newReserva.booking_id]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -171,7 +182,7 @@ const GestionReservas = () => {
     }
     setNewReserva((prevReserva) => ({ ...prevReserva, [name]: value }));
   };
-  
+
   const hasExcludedDates = (startDate, endDate) => {
     const dateRange = [];
     let currentDate = new Date(startDate);
@@ -181,7 +192,7 @@ const GestionReservas = () => {
     }
     return excludedDates.some(date => dateRange.includes(date.toISOString().split('T')[0]));
   };
-  
+
   const handleDateChange = (date) => {
     if (!newReserva.start_date || (newReserva.start_date && newReserva.end_date)) {
       setNewReserva({ ...newReserva, start_date: date, end_date: null });
@@ -194,7 +205,7 @@ const GestionReservas = () => {
         setNewReserva({ ...newReserva, start_date: null, end_date: null });
         return;
       }
-  
+      
       setNewReserva((prevReserva) => ({
         ...prevReserva,
         start_date: start,
@@ -202,7 +213,6 @@ const GestionReservas = () => {
       }));
     }
   };
-  
 
   const isFormValid = () => {
     return (
@@ -215,10 +225,12 @@ const GestionReservas = () => {
   };
 
   const handleAddOrUpdateReserva = () => {
-    if (!isFormValid()) return alert("Por favor, completa todos los campos obligatorios o corrige las fechas.");
+    if (!isFormValid() && !isEditing) return alert("Por favor, completa todos los campos obligatorios o corrige las fechas.");
 
     const method = isEditing ? 'PUT' : 'POST';
     const url = isEditing ? `http://localhost:8001/bookings/${newReserva.booking_id}` : 'http://localhost:8001/bookings';
+    // Imprimir la fecha de llegada antes de enviar
+    console.log("Fecha de llegada:", newReserva.start_date);
 
     fetch(url, {
         method: method,
@@ -247,17 +259,35 @@ const GestionReservas = () => {
     setIsEditing(false);
   };
 
+  const handleDeleteReserva = (id) => {
+    const reservaToCancel = reservas.find(reserva => reserva.booking_id === id);
+    if (reservaToCancel) {
+      const nights = (new Date(reservaToCancel.end_date) - new Date(reservaToCancel.start_date)) / (1000 * 60 * 60 * 24);
+      const selectedCabin = cabanas.find(cabin => cabin.cabin_id === reservaToCancel.cabin_id);
+      const discount = reservaToCancel.discount ? (reservaToCancel.discount / 100) : 0;
+      const cost = selectedCabin.cost_per_night * nights * (1 - discount);
 
- const handleDeleteReserva = (id) => {
-  if (window.confirm("¿Estás seguro de que deseas eliminar esta reserva?")) {
-    fetch(`http://localhost:8001/bookings/${id}`, {
-      method: 'DELETE'
-    })
-    .then(() => {
-      setReservas(reservas.filter(reserva => reserva.booking_id !== id));
-    });
-  }
-};
+      const cancelNote = `
+${reservaToCancel.note}
+Reserva cancelada: ${new Date().toLocaleDateString()}
+Fecha de reserva: ${new Date(reservaToCancel.start_date).toLocaleDateString()}
+Noches de reserva: ${nights}
+Costo de reserva: ${cost.toFixed(2)}
+      `;
+
+      fetch(`http://localhost:8001/bookings/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ...reservaToCancel, status: 'canceled', note: cancelNote })
+      })
+      .then(response => response.json())
+      .then(() => {
+        setReservas(reservas.map(reserva => reserva.booking_id === id ? { ...reserva, status: 'canceled', note: cancelNote } : reserva));
+      });
+    }
+  };
 
   const handleEditReserva = (reserva) => {
     setNewReserva(reserva);
@@ -354,11 +384,18 @@ const GestionReservas = () => {
           disabled={!newReserva.cabin_id}
           inline
         />
-        <Legend>
-          {newReserva.start_date && !newReserva.end_date
-            ? 'Fecha de llegada capturada, por favor seleccione fecha de salida.'
-            : `Reserva de ${nights + 1} días ${nights} ${nights === 1 ? 'noche' : 'noches'}`}
-        </Legend>
+       {newReserva.start_date || newReserva.end_date ? (
+          <Legend>
+            {newReserva.start_date && !newReserva.end_date
+              ? 'Fecha de llegada capturada, por favor seleccione fecha de salida.'
+              : `Reserva de ${nights + 1} días ${nights} ${nights === 1 ? 'noche' : 'noches'}. 
+                Fecha de llegada: ${new Date(newReserva.start_date).toLocaleDateString('es-MX', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}`}
+          </Legend>
+        ) : null}
 
 
       </FormSection>
@@ -391,7 +428,7 @@ const GestionReservas = () => {
         </CostLabel>
       )}
 
-      <Button onClick={handleAddOrUpdateReserva} disabled={!isFormValid()}>
+      <Button onClick={handleAddOrUpdateReserva} disabled={!isFormValid() && !isEditing}>
         {isEditing ? 'Actualizar Reserva' : 'Agregar Reserva'}
       </Button>
 
@@ -448,7 +485,7 @@ const GestionReservas = () => {
         </thead>
         <tbody>
           {filteredReservas.map(reserva => (
-            <tr key={reserva.booking_id}>
+            <tr key={reserva.booking_id} title={`Costo: $${(cabanas.find(cabin => cabin.cabin_id === reserva.cabin_id)?.cost_per_night)*(new Date(reserva.end_date) - new Date(reserva.start_date)) / (1000 * 60 * 60 * 24)*(1-reserva.discount/100) || 'Cabaña no encontrada'}, Noches: ${(new Date(reserva.end_date) - new Date(reserva.start_date)) / (1000 * 60 * 60 * 24)}`}>
               <td>{reserva.booking_id}</td>
               <td>{usuarios.find(user => user.user_id === reserva.user_id)?.first_name || 'Usuario no encontrado'}</td>
               <td>{cabanas.find(cabin => cabin.cabin_id === reserva.cabin_id)?.name || 'Cabaña no encontrada'}</td>
@@ -465,6 +502,7 @@ const GestionReservas = () => {
           ))}
         </tbody>
       </Table>
+      <Tooltip ref={tooltipRef}></Tooltip>
     </Container>
   );
 };
