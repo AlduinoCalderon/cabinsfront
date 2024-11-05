@@ -118,13 +118,15 @@ const Tooltip = styled.div`
 
 const GestionReservas = () => {
   const [reservas, setReservas] = useState([]);
+  // const end_date = 
   const [cabanas, setCabanas] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
+  const [nights, setNights] = useState(1);
   const [newReserva, setNewReserva] = useState({
     user_id: '',
     cabin_id: '',
     start_date: null,
-    end_date: null,
+    nights: 1,
     status: 'pending',
     discount: '',
     note: ''
@@ -156,10 +158,10 @@ const GestionReservas = () => {
       const fechasExcluidas = [];
       reservasCabana.forEach(reserva => {
         let startDate = new Date(reserva.start_date);
-        let endDate = new Date(reserva.end_date);
-        endDate.setDate(endDate.getDate() - 1); // Exclude the end date
+        let endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + reserva.nights - 1 ); // Calcular la fecha de salida basada en las noches
 
-        while (startDate <= endDate) {
+        while (startDate < endDate) {
           fechasExcluidas.push(new Date(startDate));
           startDate.setDate(startDate.getDate() + 1);
         }
@@ -175,14 +177,23 @@ const GestionReservas = () => {
         ...prevReserva,
         cabin_id: value,
         start_date: null, // Reinicia la fecha de inicio
-        end_date: null    // Reinicia la fecha de fin
+        nights: 1    // Reinicia la fecha de fin
       }));
     } else if (name === 'discount') {
       if (value < 0 || value > 100) return;
     }
     setNewReserva((prevReserva) => ({ ...prevReserva, [name]: value }));
   };
-
+  const handleNightsChange = (e) => {
+    const selectedNights = parseInt(e.target.value, 10);
+    setNights(selectedNights);
+    
+    if (newReserva.start_date) {
+      const endDate = new Date(newReserva.start_date);
+      endDate.setDate(endDate.getDate() + selectedNights); // Actualiza la fecha de salida
+      setNewReserva(prev => ({ ...prev, end_date: endDate }));
+    }
+  };
   const hasExcludedDates = (startDate, endDate) => {
     const dateRange = [];
     let currentDate = new Date(startDate);
@@ -194,23 +205,12 @@ const GestionReservas = () => {
   };
 
   const handleDateChange = (date) => {
-    if (!newReserva.start_date || (newReserva.start_date && newReserva.end_date)) {
-      setNewReserva({ ...newReserva, start_date: date, end_date: null });
-    } else {
-      const [start, end] = [newReserva.start_date, date].sort((a, b) => a - b);
-      
-      // Verificar si hay fechas excluidas en el rango
-      if (hasExcludedDates(start, end)) {
-        alert("Las fechas seleccionadas incluyen días ya ocupados. Por favor, selecciona otras fechas.");
-        setNewReserva({ ...newReserva, start_date: null, end_date: null });
-        return;
-      }
-      
-      setNewReserva((prevReserva) => ({
-        ...prevReserva,
-        start_date: start,
-        end_date: end
-      }));
+    setNewReserva({ ...newReserva, start_date: date });
+    // Actualiza automáticamente la fecha de fin al seleccionar la fecha de inicio
+    if (nights) {
+      const endDate = new Date(date);
+      endDate.setDate(endDate.getDate() + nights-1); // Ajusta la fecha de salida según el número de noches
+      setNewReserva(prev => ({ ...prev, end_date: endDate }));
     }
   };
 
@@ -219,8 +219,7 @@ const GestionReservas = () => {
       newReserva.user_id &&
       newReserva.cabin_id &&
       newReserva.start_date &&
-      newReserva.end_date &&
-      newReserva.start_date < newReserva.end_date
+      newReserva.nights
     );
   };
 
@@ -262,18 +261,18 @@ const GestionReservas = () => {
   const handleDeleteReserva = (id) => {
     const reservaToCancel = reservas.find(reserva => reserva.booking_id === id);
     if (reservaToCancel) {
-      const nights = (new Date(reservaToCancel.end_date) - new Date(reservaToCancel.start_date)) / (1000 * 60 * 60 * 24);
+     // const nights = (new Date(reservaToCancel.end_date) - new Date(reservaToCancel.start_date)) / (1000 * 60 * 60 * 24);
       const selectedCabin = cabanas.find(cabin => cabin.cabin_id === reservaToCancel.cabin_id);
       const discount = reservaToCancel.discount ? (reservaToCancel.discount / 100) : 0;
       const cost = selectedCabin.cost_per_night * nights * (1 - discount);
 
       const cancelNote = `
-${reservaToCancel.note}
-Reserva cancelada: ${new Date().toLocaleDateString()}
-Fecha de reserva: ${new Date(reservaToCancel.start_date).toLocaleDateString()}
-Noches de reserva: ${nights}
-Costo de reserva: ${cost.toFixed(2)}
-      `;
+      ${reservaToCancel.note}
+      Reserva cancelada el día: ${new Date().toLocaleDateString()}
+      Fecha de reserva: ${new Date(reservaToCancel.start_date).toLocaleDateString()}
+      Noches de reserva: ${nights}
+      Costo de reserva: ${cost.toFixed(2)}
+            `;
 
       fetch(`http://localhost:8001/bookings/${id}`, {
         method: 'PUT',
@@ -314,7 +313,7 @@ Costo de reserva: ${cost.toFixed(2)}
       return null;
     }
 
-    const nights = (new Date(newReserva.end_date) - new Date(newReserva.start_date)) / (1000 * 60 * 60 * 24);
+   //const nights = (new Date(newReserva.end_date) - new Date(newReserva.start_date)) / (1000 * 60 * 60 * 24);
     const discount = newReserva.discount ? (newReserva.discount / 100) : 0;
     const cost = selectedCabin.cost_per_night * nights * (1 - discount);
 
@@ -336,10 +335,6 @@ Costo de reserva: ${cost.toFixed(2)}
     }
     return true;
   });
-
-  const nights = newReserva.start_date && newReserva.end_date ? 
-    (new Date(newReserva.end_date) - new Date(newReserva.start_date)) / (1000 * 60 * 60 * 24) : 
-    0;
 
   return (
     <Container ref={refContainer}>
@@ -405,7 +400,6 @@ Costo de reserva: ${cost.toFixed(2)}
         <Select name="status" value={newReserva.status} onChange={handleInputChange}>
           <option value="pending">Pendiente</option>
           <option value="confirmed">Confirmada</option>
-          <option value="canceled">Cancelada</option>
         </Select>
 
         <Label>Notas:</Label>
@@ -496,7 +490,7 @@ Costo de reserva: ${cost.toFixed(2)}
               <td>{reserva.discount ? `${reserva.discount}%` : 'N/A'}</td>
               <td>
                 <button onClick={() => handleEditReserva(reserva)}>Editar</button>
-                <button onClick={() => handleDeleteReserva(reserva.booking_id)}>Eliminar</button>
+                <button onClick={() => handleDeleteReserva(reserva.booking_id)}>Cancelar</button>
               </td>
             </tr>
           ))}
