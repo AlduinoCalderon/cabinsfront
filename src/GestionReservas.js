@@ -4,6 +4,7 @@ import TopBar from './components/TopBar';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import styled from 'styled-components';
+import moment from 'moment-timezone';
 
 const Container = styled.div`
   display: flex;
@@ -106,35 +107,26 @@ const CostLabel = styled.div`
   font-weight: bold;
 `;
 
-const Tooltip = styled.div`
-  position: absolute;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  padding: 5px;
-  border-radius: 4px;
-  display: none;
-  z-index: 10;
-`;
-
 const GestionReservas = () => {
   const [reservas, setReservas] = useState([]);
   const [cabanas, setCabanas] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
+  const [nights, setNights] = useState(1);
   const [newReserva, setNewReserva] = useState({
     user_id: '',
     cabin_id: '',
     start_date: null,
-    end_date: null,
+    nights: 1,
     status: 'pending',
     discount: '',
     note: ''
   });
   const [filterField, setFilterField] = useState('');
   const [filterValue, setFilterValue] = useState('');
+  const [filterStatus, setFilterStatus] = useState(''); // Nuevo filtro por estado
   const [isEditing, setIsEditing] = useState(false);
   const [excludedDates, setExcludedDates] = useState([]);
   const refContainer = useRef(null);
-  const tooltipRef = useRef(null);
 
   useEffect(() => {
     fetch('http://localhost:8001/bookings')
@@ -155,13 +147,10 @@ const GestionReservas = () => {
       const reservasCabana = reservas.filter(reserva => reserva.cabin_id === parseInt(newReserva.cabin_id) && reserva.status !== 'canceled' && (!isEditing || reserva.booking_id !== newReserva.booking_id));
       const fechasExcluidas = [];
       reservasCabana.forEach(reserva => {
-        let startDate = new Date(reserva.start_date);
-        let endDate = new Date(reserva.end_date);
-        endDate.setDate(endDate.getDate() - 1); // Exclude the end date
-
-        while (startDate <= endDate) {
-          fechasExcluidas.push(new Date(startDate));
-          startDate.setDate(startDate.getDate() + 1);
+        let startDate = moment(reserva.start_date);
+        for (let i = 0; i < reserva.nights; i++) {
+          fechasExcluidas.push(startDate.toDate());
+          startDate.add(1, 'days');
         }
       });
       setExcludedDates(fechasExcluidas);
@@ -175,7 +164,7 @@ const GestionReservas = () => {
         ...prevReserva,
         cabin_id: value,
         start_date: null, // Reinicia la fecha de inicio
-        end_date: null    // Reinicia la fecha de fin
+        nights: 1    // Reinicia la fecha de fin
       }));
     } else if (name === 'discount') {
       if (value < 0 || value > 100) return;
@@ -183,35 +172,20 @@ const GestionReservas = () => {
     setNewReserva((prevReserva) => ({ ...prevReserva, [name]: value }));
   };
 
-  const hasExcludedDates = (startDate, endDate) => {
-    const dateRange = [];
-    let currentDate = new Date(startDate);
-    while (currentDate <= endDate) {
-      dateRange.push(currentDate.toISOString().split('T')[0]); // Guardamos la fecha en formato YYYY-MM-DD
-      currentDate.setDate(currentDate.getDate() + 1);
+  const handleNightsChange = (e) => {
+    const selectedNights = parseInt(e.target.value, 10);
+    setNights(selectedNights);
+
+    if (newReserva.start_date) {
+      const endDate = moment(newReserva.start_date).add(selectedNights - 1, 'days').toDate(); // Actualiza la fecha de salida
+      setNewReserva(prev => ({ ...prev, end_date: endDate, nights: selectedNights }));
     }
-    return excludedDates.some(date => dateRange.includes(date.toISOString().split('T')[0]));
   };
 
   const handleDateChange = (date) => {
-    if (!newReserva.start_date || (newReserva.start_date && newReserva.end_date)) {
-      setNewReserva({ ...newReserva, start_date: date, end_date: null });
-    } else {
-      const [start, end] = [newReserva.start_date, date].sort((a, b) => a - b);
-      
-      // Verificar si hay fechas excluidas en el rango
-      if (hasExcludedDates(start, end)) {
-        alert("Las fechas seleccionadas incluyen días ya ocupados. Por favor, selecciona otras fechas.");
-        setNewReserva({ ...newReserva, start_date: null, end_date: null });
-        return;
-      }
-      
-      setNewReserva((prevReserva) => ({
-        ...prevReserva,
-        start_date: start,
-        end_date: end
-      }));
-    }
+    const adjustedDate = moment(date).tz('America/Mexico_City', true).startOf('day').toDate();
+    setNewReserva({ ...newReserva, start_date: adjustedDate, nights: 1 });
+    setNights(1);
   };
 
   const isFormValid = () => {
@@ -219,8 +193,7 @@ const GestionReservas = () => {
       newReserva.user_id &&
       newReserva.cabin_id &&
       newReserva.start_date &&
-      newReserva.end_date &&
-      newReserva.start_date < newReserva.end_date
+      newReserva.nights
     );
   };
 
@@ -255,25 +228,26 @@ const GestionReservas = () => {
         setReservas(data);
     });
 
-    setNewReserva({ user_id: '', cabin_id: '', start_date: null, end_date: null, status: 'pending', discount: '', note: '' });
+    setNewReserva({ user_id: '', cabin_id: '', start_date: null, nights:1, status: 'pending', discount: '', note: '' });
     setIsEditing(false);
   };
 
   const handleDeleteReserva = (id) => {
+    if (window.confirm("¿Estás seguro de que deseas cancelar esta reserva?")){
     const reservaToCancel = reservas.find(reserva => reserva.booking_id === id);
     if (reservaToCancel) {
-      const nights = (new Date(reservaToCancel.end_date) - new Date(reservaToCancel.start_date)) / (1000 * 60 * 60 * 24);
+      const nights = reservaToCancel.nights;
       const selectedCabin = cabanas.find(cabin => cabin.cabin_id === reservaToCancel.cabin_id);
       const discount = reservaToCancel.discount ? (reservaToCancel.discount / 100) : 0;
       const cost = selectedCabin.cost_per_night * nights * (1 - discount);
 
       const cancelNote = `
-${reservaToCancel.note}
-Reserva cancelada: ${new Date().toLocaleDateString()}
-Fecha de reserva: ${new Date(reservaToCancel.start_date).toLocaleDateString()}
-Noches de reserva: ${nights}
-Costo de reserva: ${cost.toFixed(2)}
-      `;
+      ${reservaToCancel.note}
+      Reserva cancelada el día: ${moment().format('YYYY-MM-DD')}
+      Fecha de reserva: ${moment(reservaToCancel.start_date).format('YYYY-MM-DD')}
+      Noches de reserva: ${nights}
+      Costo de reserva: ${cost.toFixed(2)}
+            `;
 
       fetch(`http://localhost:8001/bookings/${id}`, {
         method: 'PUT',
@@ -286,11 +260,14 @@ Costo de reserva: ${cost.toFixed(2)}
       .then(() => {
         setReservas(reservas.map(reserva => reserva.booking_id === id ? { ...reserva, status: 'canceled', note: cancelNote } : reserva));
       });
-    }
+    }}
   };
 
   const handleEditReserva = (reserva) => {
+    const adjustedStartDate = moment(reserva.start_date).tz('America/Mexico_City', true).startOf('day').toDate();
+    reserva.start_date = adjustedStartDate;
     setNewReserva(reserva);
+    setNights(reserva.nights);
     setIsEditing(true);
     refContainer.current.scrollIntoView({ behavior: 'smooth' });
   };
@@ -304,8 +281,12 @@ Costo de reserva: ${cost.toFixed(2)}
     setFilterValue(e.target.value);
   };
 
+  const handleFilterStatusChange = (e) => {
+    setFilterStatus(e.target.value);
+  };
+
   const calculateCost = () => {
-    if (!newReserva.cabin_id || !newReserva.start_date || !newReserva.end_date) {
+    if (!newReserva.cabin_id || !newReserva.start_date || !newReserva.nights) {
       return null;
     }
 
@@ -314,7 +295,6 @@ Costo de reserva: ${cost.toFixed(2)}
       return null;
     }
 
-    const nights = (new Date(newReserva.end_date) - new Date(newReserva.start_date)) / (1000 * 60 * 60 * 24);
     const discount = newReserva.discount ? (newReserva.discount / 100) : 0;
     const cost = selectedCabin.cost_per_night * nights * (1 - discount);
 
@@ -329,17 +309,34 @@ Costo de reserva: ${cost.toFixed(2)}
     } else if (filterField === 'cabin' && filterValue) {
       return reserva.cabin_id === parseInt(filterValue);
     } else if (filterField === 'date' && filterValue) {
-      const selectedDate = new Date(filterValue);
-      return selectedDate >= new Date(reserva.start_date) && selectedDate <= new Date(reserva.end_date);
+      const selectedDate = moment(filterValue);
+      return selectedDate.isSameOrAfter(moment(reserva.start_date)) && selectedDate.isSameOrBefore(moment(reserva.end_date));
     } else if (filterField === 'id' && filterValue) {
       return reserva.booking_id === parseInt(filterValue);
+    } else if (filterStatus && reserva.status !== filterStatus) {
+      return false;
     }
     return true;
   });
 
-  const nights = newReserva.start_date && newReserva.end_date ? 
-    (new Date(newReserva.end_date) - new Date(newReserva.start_date)) / (1000 * 60 * 60 * 24) : 
-    0;
+  const getAvailableNights = () => {
+    if (!newReserva.start_date || !newReserva.cabin_id) return [];
+
+    const availableNights = [1, 2, 3, 4, 5, 6, 7];
+    const reservasCabana = reservas.filter(reserva => reserva.cabin_id === parseInt(newReserva.cabin_id) && reserva.status !== 'canceled' && (!isEditing || reserva.booking_id !== newReserva.booking_id));
+
+    availableNights.forEach((night, index) => {
+      const checkDate = moment(newReserva.start_date).add(night - 1, 'days');
+      const isOccupied = reservasCabana.some(reserva => {
+        const startDate = moment(reserva.start_date);
+        const endDate = moment(reserva.start_date).add(reserva.nights - 1, 'days');
+        return checkDate.isBetween(startDate, endDate, undefined, '[]');
+      });
+      if (isOccupied) availableNights.splice(index);
+    });
+
+    return availableNights;
+  };
 
   return (
     <Container ref={refContainer}>
@@ -372,32 +369,35 @@ Costo de reserva: ${cost.toFixed(2)}
       </FormSection>
 
       <FormSection>
-        <Label>Selecciona fechas:</Label>
+        <Label>Selecciona la fecha de llegada:</Label>
         <DatePicker
           selected={newReserva.start_date}
           onChange={handleDateChange}
-          selectsStart
-          startDate={newReserva.start_date}
-          endDate={newReserva.end_date}
           minDate={new Date()}
           excludeDates={excludedDates}
           disabled={!newReserva.cabin_id}
           inline
         />
-       {newReserva.start_date || newReserva.end_date ? (
+        <Label>Número de noches:</Label>
+        <Select
+          value={nights}
+          onChange={handleNightsChange}
+          disabled={!newReserva.cabin_id || !newReserva.start_date}
+        >
+          <option value="" disabled>Selecciona cantidad de noches</option>
+          {getAvailableNights().map(night => (
+            <option key={night} value={night}>{night}</option>
+          ))}
+        </Select>
+
+        {newReserva.start_date && nights > 0 && (
           <Legend>
-            {newReserva.start_date && !newReserva.end_date
-              ? 'Fecha de llegada capturada, por favor seleccione fecha de salida.'
-              : `Reserva de ${nights + 1} días ${nights} ${nights === 1 ? 'noche' : 'noches'}. 
-                Fecha de llegada: ${new Date(newReserva.start_date).toLocaleDateString('es-MX', { 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}`}
+            Reserva de {nights + 1} días y {nights} noches.
+            Fecha de salida: {newReserva.start_date && nights 
+            ? moment(newReserva.start_date).add(nights, 'days').format('DD-MM-YYYY') 
+            : 'No asignada'}
           </Legend>
-        ) : null}
-
-
+        )}
       </FormSection>
 
       <FormSection>
@@ -405,7 +405,6 @@ Costo de reserva: ${cost.toFixed(2)}
         <Select name="status" value={newReserva.status} onChange={handleInputChange}>
           <option value="pending">Pendiente</option>
           <option value="confirmed">Confirmada</option>
-          <option value="canceled">Cancelada</option>
         </Select>
 
         <Label>Notas:</Label>
@@ -448,7 +447,7 @@ Costo de reserva: ${cost.toFixed(2)}
             {filterField === 'date' ? (
               <DatePicker
                 selected={filterValue ? new Date(filterValue) : null}
-                onChange={(date) => setFilterValue(date ? date.toISOString().split('T')[0] : '')}
+                onChange={(date) => setFilterValue(date ? moment(date).format('YYYY-MM-DD') : '')}
                 inline
               />
             ) : (
@@ -467,6 +466,13 @@ Costo de reserva: ${cost.toFixed(2)}
             )}
           </>
         )}
+        <Label>Estado de la cabaña:</Label>
+        <Select value={filterStatus} onChange={handleFilterStatusChange}>
+          <option value="">Todos los estados</option>
+          <option value="pending">Pendiente</option>
+          <option value="confirmed">Confirmada</option>
+          <option value="canceled">Cancelada</option>
+        </Select>
       </FormSection>
 
       <Table>
@@ -475,8 +481,8 @@ Costo de reserva: ${cost.toFixed(2)}
             <th>ID de Reserva</th>
             <th>Usuario</th>
             <th>Cabaña</th>
-            <th>Fecha de Inicio</th>
-            <th>Fecha de Fin</th>
+            <th>Fecha de Llegada</th>
+            <th>Fecha de Partida</th>
             <th>Estado</th>
             <th>Notas</th>
             <th>Descuento</th>
@@ -485,24 +491,24 @@ Costo de reserva: ${cost.toFixed(2)}
         </thead>
         <tbody>
           {filteredReservas.map(reserva => (
-            <tr key={reserva.booking_id} title={`Costo: $${(cabanas.find(cabin => cabin.cabin_id === reserva.cabin_id)?.cost_per_night)*(new Date(reserva.end_date) - new Date(reserva.start_date)) / (1000 * 60 * 60 * 24)*(1-reserva.discount/100) || 'Cabaña no encontrada'}, Noches: ${(new Date(reserva.end_date) - new Date(reserva.start_date)) / (1000 * 60 * 60 * 24)}`}>
+            <tr key={reserva.booking_id} title={`Costo: $${(cabanas.find(cabin => cabin.cabin_id === reserva.cabin_id)?.cost_per_night)*(reserva.nights)*(1-reserva.discount/100) || 'Cabaña no encontrada'}, Noches: ${reserva.nights}`}>
               <td>{reserva.booking_id}</td>
-              <td>{usuarios.find(user => user.user_id === reserva.user_id)?.first_name || 'Usuario no encontrado'}</td>
+              <td>{`${usuarios.find(user => user.user_id === reserva.user_id)?.first_name}
+              (${usuarios.find(user => user.user_id === reserva.user_id)?.email})` || 'Usuario no encontrado'}</td>
               <td>{cabanas.find(cabin => cabin.cabin_id === reserva.cabin_id)?.name || 'Cabaña no encontrada'}</td>
-              <td>{new Date(reserva.start_date).toLocaleDateString()}</td>
-              <td>{new Date(reserva.end_date).toLocaleDateString()}</td>
+              <td>{moment(reserva.start_date).format('DD-MM-YYYY')}</td>
+              <td>{moment(reserva.start_date).add(reserva.nights, 'days').format('DD-MM-YYYY')}</td>
               <StatusCell status={reserva.status}>{reserva.status}</StatusCell>
               <td>{reserva.note}</td>
               <td>{reserva.discount ? `${reserva.discount}%` : 'N/A'}</td>
               <td>
                 <button onClick={() => handleEditReserva(reserva)}>Editar</button>
-                <button onClick={() => handleDeleteReserva(reserva.booking_id)}>Eliminar</button>
+                <button onClick={() => handleDeleteReserva(reserva.booking_id)}>Cancelar</button>
               </td>
             </tr>
           ))}
         </tbody>
       </Table>
-      <Tooltip ref={tooltipRef}></Tooltip>
     </Container>
   );
 };
