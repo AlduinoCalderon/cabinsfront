@@ -125,6 +125,7 @@ const GestionReservas = () => {
   const [filterValue, setFilterValue] = useState('');
   const [filterStatus, setFilterStatus] = useState(''); // Nuevo filtro por estado
   const [isEditing, setIsEditing] = useState(false);
+  const [excludedDates, setExcludedDates] = useState([]);
   const refContainer = useRef(null);
 
   useEffect(() => {
@@ -140,6 +141,21 @@ const GestionReservas = () => {
       .then(response => response.json())
       .then(data => setUsuarios(data));
   }, []);
+
+  useEffect(() => {
+    if (newReserva.cabin_id) {
+      const reservasCabana = reservas.filter(reserva => reserva.cabin_id === parseInt(newReserva.cabin_id) && reserva.status !== 'canceled' && (!isEditing || reserva.booking_id !== newReserva.booking_id));
+      const fechasExcluidas = [];
+      reservasCabana.forEach(reserva => {
+        let startDate = moment(reserva.start_date);
+        for (let i = 0; i < reserva.nights; i++) {
+          fechasExcluidas.push(startDate.toDate());
+          startDate.add(1, 'days');
+        }
+      });
+      setExcludedDates(fechasExcluidas);
+    }
+  }, [newReserva.cabin_id, reservas, isEditing, newReserva.booking_id]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -159,7 +175,7 @@ const GestionReservas = () => {
   const handleNightsChange = (e) => {
     const selectedNights = parseInt(e.target.value, 10);
     setNights(selectedNights);
-    
+
     if (newReserva.start_date) {
       const endDate = moment(newReserva.start_date).add(selectedNights - 1, 'days').toDate(); // Actualiza la fecha de salida
       setNewReserva(prev => ({ ...prev, end_date: endDate, nights: selectedNights }));
@@ -168,13 +184,8 @@ const GestionReservas = () => {
 
   const handleDateChange = (date) => {
     const adjustedDate = moment(date).tz('America/Mexico_City', true).startOf('day').toDate();
-    const noches = setNights("");
-    setNewReserva({ ...newReserva, nights: noches, start_date: adjustedDate });
-    // Actualiza automáticamente la fecha de fin al seleccionar la fecha de inicio
-    if (nights) {
-      const endDate = moment(adjustedDate).add(nights - 1, 'days').toDate(); // Ajusta la fecha de salida según el número de noches
-      setNewReserva(prev => ({ ...prev, end_date: endDate }));
-    }
+    setNewReserva({ ...newReserva, start_date: adjustedDate, nights: 1 });
+    setNights(1);
   };
 
   const isFormValid = () => {
@@ -255,7 +266,6 @@ const GestionReservas = () => {
   const handleEditReserva = (reserva) => {
     const adjustedStartDate = moment(reserva.start_date).tz('America/Mexico_City', true).startOf('day').toDate();
     reserva.start_date = adjustedStartDate;
-
     setNewReserva(reserva);
     setNights(reserva.nights);
     setIsEditing(true);
@@ -309,6 +319,25 @@ const GestionReservas = () => {
     return true;
   });
 
+  const getAvailableNights = () => {
+    if (!newReserva.start_date || !newReserva.cabin_id) return [];
+
+    const availableNights = [1, 2, 3, 4, 5, 6, 7];
+    const reservasCabana = reservas.filter(reserva => reserva.cabin_id === parseInt(newReserva.cabin_id) && reserva.status !== 'canceled' && (!isEditing || reserva.booking_id !== newReserva.booking_id));
+
+    availableNights.forEach((night, index) => {
+      const checkDate = moment(newReserva.start_date).add(night - 1, 'days');
+      const isOccupied = reservasCabana.some(reserva => {
+        const startDate = moment(reserva.start_date);
+        const endDate = moment(reserva.start_date).add(reserva.nights - 1, 'days');
+        return checkDate.isBetween(startDate, endDate, undefined, '[]');
+      });
+      if (isOccupied) availableNights.splice(index);
+    });
+
+    return availableNights;
+  };
+
   return (
     <Container ref={refContainer}>
       <TopBar 
@@ -345,6 +374,7 @@ const GestionReservas = () => {
           selected={newReserva.start_date}
           onChange={handleDateChange}
           minDate={new Date()}
+          excludeDates={excludedDates}
           disabled={!newReserva.cabin_id}
           inline
         />
@@ -355,7 +385,7 @@ const GestionReservas = () => {
           disabled={!newReserva.cabin_id || !newReserva.start_date}
         >
           <option value="" disabled>Selecciona cantidad de noches</option>
-          {[1, 2, 3, 4, 5, 6, 7].map(night => (
+          {getAvailableNights().map(night => (
             <option key={night} value={night}>{night}</option>
           ))}
         </Select>
