@@ -12,7 +12,7 @@ const MapaInteractivo = () => {
       nombre: 'Cabaña El Bosque 8',
       descripcion: 'Una cabaña tranquila en medio del bosque.',
       precio: 120,
-      imagenes: ['/public/mapas.jpg', '/public/mapas.jpg', '/public/mapas.jpg'],
+      imagenes: ['.../public/mapas.jpg', '.../public/mapas.jpg', '.../public/mapas.jpg'],
       position: { top: '25%', left: '40%' }
     },
     {
