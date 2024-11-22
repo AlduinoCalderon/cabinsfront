@@ -77,7 +77,8 @@ const GestionReservas = () => {
         ...prevReserva,
         cabin_id: value,
         start_date: null, 
-        nights: 1    
+        nights: 1,
+        discount: '0'
       }));
     } else if (name === 'discount') {
       if (value < 0 || value > 100) return;
