@@ -231,16 +231,7 @@ const GestionReservas = () => {
     setNewReserva({ user_id: '', cabin_id: '', start_date: null, nights:1, status: 'pending', discount: '', note: '' });
     setIsEditing(false);
   };
-  const handleDeleteUsuario = (id) => {
-    if (window.confirm("¿Estás seguro de que deseas eliminar este usuario?")) {
-      fetch(`http://localhost:8001/users/${id}`, {
-        method: 'DELETE'
-      })
-      .then(() => {
-        setUsuarios(usuarios.filter(user => user.user_id !== id));
-      });
-    }
-  };
+  
   const handleDeleteReserva = (id) => {
     if (window.confirm("¿Estás seguro de que deseas cancelar esta reserva?")){
     const reservaToCancel = reservas.find(reserva => reserva.booking_id === id);
