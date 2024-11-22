@@ -129,15 +129,15 @@ const GestionReservas = () => {
   const refContainer = useRef(null);
 
   useEffect(() => {
-    fetch('http://localhost:8001/bookings')
+    fetch('https://server-http-mfxe.onrender.com/bookings')
       .then(response => response.json())
       .then(data => setReservas(data));
 
-    fetch('http://localhost:8001/cabins')
+    fetch('https://server-http-mfxe.onrender.com/cabins')
       .then(response => response.json())
       .then(data => setCabanas(data));
 
-    fetch('http://localhost:8001/users')
+    fetch('https://server-http-mfxe.onrender.com/users')
       .then(response => response.json())
       .then(data => setUsuarios(data));
   }, []);
@@ -201,7 +201,7 @@ const GestionReservas = () => {
     if (!isFormValid() && !isEditing) return alert("Por favor, completa todos los campos obligatorios o corrige las fechas.");
 
     const method = isEditing ? 'PUT' : 'POST';
-    const url = isEditing ? `http://localhost:8001/bookings/${newReserva.booking_id}` : 'http://localhost:8001/bookings';
+    const url = isEditing ? `https://server-http-mfxe.onrender.com/bookings/${newReserva.booking_id}` : 'https://server-http-mfxe.onrender.com/bookings';
     // Imprimir la fecha de llegada antes de enviar
     console.log("Fecha de llegada:", newReserva.start_date);
 
@@ -221,7 +221,7 @@ const GestionReservas = () => {
         }
 
         // Actualiza la lista de reservas después de agregar
-        return fetch('http://localhost:8001/bookings');
+        return fetch('https://server-http-mfxe.onrender.com/bookings');
     })
     .then(response => response.json())
     .then(data => {
@@ -249,7 +249,7 @@ const GestionReservas = () => {
       Costo de reserva: ${cost.toFixed(2)}
             `;
 
-      fetch(`http://localhost:8001/bookings/${id}`, {
+      fetch(`https://server-http-mfxe.onrender.com/bookings/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -302,9 +302,7 @@ const GestionReservas = () => {
   };
 
   const filteredReservas = reservas.filter(reserva => {
-    if (!reserva.is_active) return false;
-
-    if (filterField === 'user' && filterValue) {
+       if (filterField === 'user' && filterValue) {
       return reserva.user_id === parseInt(filterValue);
     } else if (filterField === 'cabin' && filterValue) {
       return reserva.cabin_id === parseInt(filterValue);
