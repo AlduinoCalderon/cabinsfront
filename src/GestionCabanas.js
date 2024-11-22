@@ -3,8 +3,6 @@ import styled from 'styled-components';
 import NavBar from './components/NavBar';
 import CabinTable from './components/CabinTable';
 import CabinForm from './components/CabinForm';
-import ImageUpload from './components/ImageUpload';
-import ImageGallery from './components/ImageGallery';
 import { API_URL } from './constants';
 import useFetchData from './hooks/useFetchData';
 
@@ -29,8 +27,6 @@ const GestionCabanas = () => {
     cost_per_night: '',
     is_active: true
   });
-  const [images, setImages] = useState([]);
-  const [selectedCabin, setSelectedCabin] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const refContainer = useRef(null);
 
@@ -43,12 +39,6 @@ const GestionCabanas = () => {
   useEffect(() => {
     fetchData(`${API_URL}/cabins`, setCabanas);
   }, []);
-
-  useEffect(() => {
-    if (selectedCabin) {
-      fetchData(`${API_URL}/images?cabin_id=${selectedCabin.cabin_id}`, setImages);
-    }
-  }, [selectedCabin]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -81,35 +71,43 @@ const GestionCabanas = () => {
         if (isEditing) {
             setCabanas(cabanas.map(cabin => cabin.cabin_id === newCabin.cabin_id ? newCabin : cabin));
         } else {
-            setCabanas([...cabanas, data]);
+            setCabanas([...cabanas, data.Cabin]);
         }
-        setNewCabin({
-          name: '',
-          capacity: '',
-          description: '',
-          location: '',
-          cost_per_night: '',
-          is_active: true
-        });
-        setIsEditing(false);
+
+        return fetch(`${API_URL}/cabins`);
+    })
+    .then(response => response.json())
+    .then(data => {
+        setCabanas(data);
     });
+
+    setNewCabin({ name: '', capacity: '', description: '', location: '', cost_per_night: '', is_active: true });
+    setIsEditing(false);
   };
 
   const handleDeleteCabin = (id) => {
-    if (window.confirm("¿Estás seguro de que deseas eliminar esta cabaña?")) {
-      fetch(`${API_URL}/cabins/${id}`, {
-        method: 'DELETE'
-      })
-      .then(() => {
-        setCabanas(cabanas.map(cabin => cabin.cabin_id === id ? { ...cabin, is_active: false } : cabin));
-      });
+    if (window.confirm("¿Estás seguro de que deseas eliminar esta cabaña?")){
+      const cabinToDelete = cabanas.find(cabin => cabin.cabin_id === id);
+      if (cabinToDelete) {
+        fetch(`${API_URL}/cabins/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ ...cabinToDelete, is_active: false })
+        })
+        .then(response => response.json())
+        .then(() => {
+          setCabanas(cabanas.map(cabin => cabin.cabin_id === id ? { ...cabin, is_active: false } : cabin));
+        });
+      }
     }
   };
 
-  const refreshImages = () => {
-    if (selectedCabin) {
-      fetchData(`${API_URL}/images?cabin_id=${selectedCabin.cabin_id}`, setImages);
-    }
+  const handleEditCabin = (cabin) => {
+    setNewCabin(cabin);
+    setIsEditing(true);
+    refContainer.current.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
@@ -120,24 +118,15 @@ const GestionCabanas = () => {
       <CabinForm
         newCabin={newCabin}
         handleInputChange={handleInputChange}
-        isFormValid={isFormValid}
         handleAddOrUpdateCabin={handleAddOrUpdateCabin}
+        isFormValid={isFormValid}
         isEditing={isEditing}
       />
 
-      {selectedCabin && (
-        <>
-          <ImageUpload cabinId={selectedCabin.cabin_id} refreshImages={refreshImages} />
-          <ImageGallery images={images} />
-        </>
-      )}
-
       <CabinTable
-        cabanas={cabanas}
+        cabins={cabanas.filter(cabin => cabin.is_active)}
+        handleEditCabin={handleEditCabin}
         handleDeleteCabin={handleDeleteCabin}
-        setSelectedCabin={setSelectedCabin}
-        setIsEditing={setIsEditing}
-        setNewCabin={setNewCabin}
       />
     </Container>
   );
