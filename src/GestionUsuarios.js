@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import TopBar from './components/TopBar';
 import styled from 'styled-components';
-
+import NavBar from './components/NavBar';
 const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -179,7 +179,7 @@ const GestionUsuarios = () => {
 
   return (
     <Container ref={refContainer}>
-      <TopBar 
+      <NavBar 
         menuItems={[{ label: 'Inicio', path: '/' }]}
         gestionLinks={[ 
           { label: 'Gestión de Usuarios', path: '/gestion/usuarios' },
