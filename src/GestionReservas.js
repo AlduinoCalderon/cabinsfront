@@ -31,7 +31,7 @@ const GestionReservas = () => {
     start_date: null,
     nights: 1,
     status: 'pending',
-    discount: '',
+    discount: '0',
     note: ''
   });
   const [filterField, setFilterField] = useState('');
