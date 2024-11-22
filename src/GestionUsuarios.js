@@ -90,7 +90,7 @@ const GestionUsuarios = () => {
   }, []);
 
   const fetchUsuarios = () => {
-    fetch('http://localhost:8001/users')
+    fetch('https://server-http-mfxe.onrender.com/users')
       .then(response => response.json())
       .then(data => setUsuarios(data));
   };
@@ -109,7 +109,7 @@ const GestionUsuarios = () => {
       return alert("Por favor, completa todos los campos obligatorios y asegúrate de que las contraseñas coinciden.");
     }
     const method = isEditing ? 'PUT' : 'POST';
-    const url = isEditing ? `http://localhost:8001/users/${newUsuario.user_id}` : 'http://localhost:8001/users/';
+    const url = isEditing ? `https://server-http-mfxe.onrender.com/users/${newUsuario.user_id}` : 'https://server-http-mfxe.onrender.com/users/';
 
     fetch(url, {
       method: method,
@@ -134,7 +134,7 @@ const GestionUsuarios = () => {
 
   const handleDeleteUsuario = (id) => {
     if (window.confirm("¿Estás seguro de que deseas eliminar este usuario?")) {
-      fetch(`http://localhost:8001/users/${id}`, {
+      fetch(`https://server-http-mfxe.onrender.com/users/${id}`, {
         method: 'DELETE'
       })
       .then(() => {
@@ -151,7 +151,7 @@ const GestionUsuarios = () => {
 
   const handleResetPassword = (id) => {
     if (window.confirm("¿Estás seguro de que deseas resetear la contraseña de este usuario?")) {
-      fetch(`http://localhost:8001/users/${id}`, {
+      fetch(`https://server-http-mfxe.onrender.com/users/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
