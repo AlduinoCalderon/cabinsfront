@@ -176,7 +176,6 @@ const GestionUsuarios = () => {
   };
 
   const filteredUsuarios = filterRole === 'all' ? usuarios : usuarios.filter(user => user.role === filterRole);
-
   return (
     <Container ref={refContainer}>
       <NavBar 
