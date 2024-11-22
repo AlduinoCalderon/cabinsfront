@@ -53,7 +53,7 @@ const Table = styled.table`
 
   th, td {
     border: 1px solid #ddd;
-    padding: 8px;
+    padding: 9px;
     text-align: left;
   }
 
@@ -147,6 +147,9 @@ const GestionUsuarios = () => {
     const passwordactual = user.password;
     user.confirmPassword = passwordactual;
     setNewUsuario(user);
+
+    
+    
     setIsEditing(true);
     refContainer.current.scrollIntoView({ behavior: 'smooth' });
   };

@@ -1,10 +1,13 @@
-// src/GestionReservas.js
 import React, { useState, useEffect, useRef } from 'react';
-import TopBar from './components/TopBar';
+import moment from 'moment-timezone';
+import styled from 'styled-components';
+import NavBar from './components/NavBar';
+import ReservationTable from './components/ReservationTable';
+import { API_URL } from './constants';
+import useFetchData from './hooks/useFetchData';
+import { ReservationForm, FormSection, Label, Select, TextArea, Button, Legend, CostLabel } from './components/ReservationForm';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import styled from 'styled-components';
-import moment from 'moment-timezone';
 
 const Container = styled.div`
   display: flex;
@@ -15,96 +18,6 @@ const Container = styled.div`
     max-width: 800px;
     margin: auto;
   }
-`;
-
-const FormSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 20px;
-`;
-
-const Label = styled.label`
-  margin-bottom: 5px;
-  font-weight: bold;
-`;
-
-const Select = styled.select`
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-`;
-
-const TextArea = styled.textarea`
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-`;
-
-const Button = styled.button`
-  padding: 10px;
-  background-color: #007BFF;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-
-  &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-`;
-
-const StatusCell = styled.td`
-  background-color: ${props => {
-    switch (props.status) {
-      case 'confirmed':
-        return 'green';
-      case 'pending':
-        return 'yellow';
-      case 'canceled':
-        return 'red';
-      default:
-        return 'white';
-    }
-  }};
-  color: black;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-
-  th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-  }
-
-  th {
-    background-color: #f2f2f2;
-    font-weight: bold;
-  }
-
-  tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
-
-  tr:hover {
-    background-color: #f1f1f1;
-  }
-`;
-
-const Legend = styled.p`
-  margin-top: 10px;
-  font-weight: bold;
-`;
-
-const CostLabel = styled.div`
-  margin-top: 20px;
-  font-weight: bold;
 `;
 
 const GestionReservas = () => {
@@ -123,7 +36,7 @@ const GestionReservas = () => {
   });
   const [filterField, setFilterField] = useState('');
   const [filterValue, setFilterValue] = useState('');
-  const [filterStatus, setFilterStatus] = useState(''); // Nuevo filtro por estado
+  const [filterStatus, setFilterStatus] = useState(''); 
   const [isEditing, setIsEditing] = useState(false);
   const [excludedDates, setExcludedDates] = useState([]);
   const refContainer = useRef(null);
@@ -163,8 +76,8 @@ const GestionReservas = () => {
       setNewReserva((prevReserva) => ({
         ...prevReserva,
         cabin_id: value,
-        start_date: null, // Reinicia la fecha de inicio
-        nights: 1    // Reinicia la fecha de fin
+        start_date: null, 
+        nights: 1    
       }));
     } else if (name === 'discount') {
       if (value < 0 || value > 100) return;
@@ -177,7 +90,7 @@ const GestionReservas = () => {
     setNights(selectedNights);
 
     if (newReserva.start_date) {
-      const endDate = moment(newReserva.start_date).add(selectedNights - 1, 'days').toDate(); // Actualiza la fecha de salida
+      const endDate = moment(newReserva.start_date).add(selectedNights - 1, 'days').toDate(); 
       setNewReserva(prev => ({ ...prev, end_date: endDate, nights: selectedNights }));
     }
   };
@@ -234,20 +147,14 @@ const GestionReservas = () => {
 
   const handleDeleteReserva = (id) => {
     if (window.confirm("¿Estás seguro de que deseas cancelar esta reserva?")){
-    const reservaToCancel = reservas.find(reserva => reserva.booking_id === id);
-    if (reservaToCancel) {
-      const nights = reservaToCancel.nights;
-      const selectedCabin = cabanas.find(cabin => cabin.cabin_id === reservaToCancel.cabin_id);
-      const discount = reservaToCancel.discount ? (reservaToCancel.discount / 100) : 0;
-      const cost = selectedCabin.cost_per_night * nights * (1 - discount);
+      const reservaToCancel = reservas.find(reserva => reserva.booking_id === id);
+      if (reservaToCancel) {
+        const nights = reservaToCancel.nights;
+        const selectedCabin = cabanas.find(cabin => cabin.cabin_id === reservaToCancel.cabin_id);
+        const discount = reservaToCancel.discount ? (reservaToCancel.discount / 100) : 0;
+        const cost = selectedCabin.cost_per_night * nights * (1 - discount);
 
-      const cancelNote = `
-      ${reservaToCancel.note}
-      Reserva cancelada el día: ${moment().format('YYYY-MM-DD')}
-      Fecha de reserva: ${moment(reservaToCancel.start_date).format('YYYY-MM-DD')}
-      Noches de reserva: ${nights}
-      Costo de reserva: ${cost.toFixed(2)}
-            `;
+        const cancelNote = `Reserva cancelada el día: ${moment().format('YYYY-MM-DD')}`;
 
       fetch(`https://server-http-mfxe.onrender.com/bookings/${id}`, {
         method: 'PUT',
@@ -338,96 +245,24 @@ const GestionReservas = () => {
 
   return (
     <Container ref={refContainer}>
-      <TopBar 
-        menuItems={[{ label: 'Inicio', path: '/' }]}
-        gestionLinks={[ 
-          { label: 'Gestión de Usuarios', path: '/gestion/usuarios' },
-          { label: 'Gestión de Cabañas', path: '/gestion/cabanas' },
-          { label: 'Gestión de Reservas', path: '/gestion/reservas' }
-        ]}
-      />
+      <NavBar />
       <h1>Gestión de Reservas</h1>
 
-      <FormSection>
-        <Label>Selecciona un usuario:</Label>
-        <Select name="user_id" value={newReserva.user_id} onChange={handleInputChange}>
-          <option value="">Selecciona un usuario</option>
-          {usuarios.map(user => (
-            <option key={user.user_id} value={user.user_id}>{`${user.first_name} (${user.email})`}</option>
-          ))}
-        </Select>
-
-        <Label>Selecciona una cabaña:</Label>
-        <Select name="cabin_id" value={newReserva.cabin_id} onChange={handleInputChange}>
-          <option value="">Selecciona una cabaña</option>
-          {cabanas.map(cabin => (
-            <option key={cabin.cabin_id} value={cabin.cabin_id}>{cabin.name}</option>
-          ))}
-        </Select>
-      </FormSection>
-
-      <FormSection>
-        <Label>Selecciona la fecha de llegada:</Label>
-        <DatePicker
-          selected={newReserva.start_date}
-          onChange={handleDateChange}
-          minDate={new Date()}
-          excludeDates={excludedDates}
-          disabled={!newReserva.cabin_id}
-          inline
-        />
-        <Label>Número de noches:</Label>
-        <Select
-          value={nights}
-          onChange={handleNightsChange}
-          disabled={!newReserva.cabin_id || !newReserva.start_date}
-        >
-          <option value="" disabled>Selecciona cantidad de noches</option>
-          {getAvailableNights().map(night => (
-            <option key={night} value={night}>{night}</option>
-          ))}
-        </Select>
-
-        {newReserva.start_date && nights > 0 && (
-          <Legend>
-            Reserva de {nights + 1} días y {nights} noches.
-            Fecha de salida: {newReserva.start_date && nights 
-            ? moment(newReserva.start_date).add(nights, 'days').format('DD-MM-YYYY') 
-            : 'No asignada'}
-          </Legend>
-        )}
-      </FormSection>
-
-      <FormSection>
-        <Label>Estado:</Label>
-        <Select name="status" value={newReserva.status} onChange={handleInputChange}>
-          <option value="pending">Pendiente</option>
-          <option value="confirmed">Confirmada</option>
-        </Select>
-
-        <Label>Notas:</Label>
-        <TextArea name="note" value={newReserva.note} onChange={handleInputChange} />
-
-        <Label>Descuento:</Label>
-        <input
-          type="number"
-          name="discount"
-          value={newReserva.discount}
-          onChange={handleInputChange}
-          min="0"
-          max="100"
-        />
-      </FormSection>
-
-      {isFormValid() && (
-        <CostLabel>
-          Costo de la reserva: ${calculateCost()}
-        </CostLabel>
-      )}
-
-      <Button onClick={handleAddOrUpdateReserva} disabled={!isFormValid() && !isEditing}>
-        {isEditing ? 'Actualizar Reserva' : 'Agregar Reserva'}
-      </Button>
+      <ReservationForm
+        newReserva={newReserva}
+        handleInputChange={handleInputChange}
+        handleDateChange={handleDateChange}
+        handleNightsChange={handleNightsChange}
+        isFormValid={isFormValid}
+        calculateCost={calculateCost}
+        handleAddOrUpdateReserva={handleAddOrUpdateReserva}
+        nights={nights}
+        usuarios={usuarios}
+        cabanas={cabanas}
+        excludedDates={excludedDates}
+        getAvailableNights={getAvailableNights}
+        isEditing={isEditing} 
+      />
 
       <FormSection>
         <Label>Filtrar por:</Label>
@@ -473,40 +308,13 @@ const GestionReservas = () => {
         </Select>
       </FormSection>
 
-      <Table>
-        <thead>
-          <tr>
-            <th>ID de Reserva</th>
-            <th>Usuario</th>
-            <th>Cabaña</th>
-            <th>Fecha de Llegada</th>
-            <th>Fecha de Partida</th>
-            <th>Estado</th>
-            <th>Notas</th>
-            <th>Descuento</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredReservas.map(reserva => (
-            <tr key={reserva.booking_id} title={`Costo: $${(cabanas.find(cabin => cabin.cabin_id === reserva.cabin_id)?.cost_per_night)*(reserva.nights)*(1-reserva.discount/100) || 'Cabaña no encontrada'}, Noches: ${reserva.nights}`}>
-              <td>{reserva.booking_id}</td>
-              <td>{`${usuarios.find(user => user.user_id === reserva.user_id)?.first_name}
-              (${usuarios.find(user => user.user_id === reserva.user_id)?.email})` || 'Usuario no encontrado'}</td>
-              <td>{cabanas.find(cabin => cabin.cabin_id === reserva.cabin_id)?.name || 'Cabaña no encontrada'}</td>
-              <td>{moment(reserva.start_date).format('DD-MM-YYYY')}</td>
-              <td>{moment(reserva.start_date).add(reserva.nights, 'days').format('DD-MM-YYYY')}</td>
-              <StatusCell status={reserva.status}>{reserva.status}</StatusCell>
-              <td>{reserva.note}</td>
-              <td>{reserva.discount ? `${reserva.discount}%` : 'N/A'}</td>
-              <td>
-                <button onClick={() => handleEditReserva(reserva)}>Editar</button>
-                <button onClick={() => handleDeleteReserva(reserva.booking_id)}>Cancelar</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+      <ReservationTable
+        filteredReservas={filteredReservas}
+        handleEditReserva={handleEditReserva}
+        handleDeleteReserva={handleDeleteReserva}
+        cabanas={cabanas}
+        usuarios={usuarios}
+      />
     </Container>
   );
 };

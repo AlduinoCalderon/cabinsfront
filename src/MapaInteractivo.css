@@ -1,0 +1,34 @@
+/* MapaInteractivo.css */
+.mapa-interactivo {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+}
+
+.fondo-mapa {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cabana-boton {
+  position: absolute;
+  cursor: pointer;
+  font-size: 5em;
+  color: #333;
+  transition: transform 1.3s ease;
+}
+
+.cabana-boton:hover {
+  transform: scale(1.5);
+}
+
+.tooltip-container {
+  position: absolute;
+  top: -100%; /* Ajusta para que el tooltip aparezca justo encima del botón */
+  left: 80%;
+  transform: translateX(-50%);
+  z-index: 100;
+  font-size: 1.2em;
+}
+
