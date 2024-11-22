@@ -1,115 +1,145 @@
-// src/GestionCabanas.js prueba push
-import React, { useState } from 'react';
-import TopBar from './components/TopBar';
+import React, { useState, useEffect, useRef } from 'react';
+import styled from 'styled-components';
+import NavBar from './components/NavBar';
+import CabinTable from './components/CabinTable';
+import CabinForm from './components/CabinForm';
+import ImageUpload from './components/ImageUpload';
+import ImageGallery from './components/ImageGallery';
+import { API_URL } from './constants';
+import useFetchData from './hooks/useFetchData';
+
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+
+  @media (min-width: 768px) {
+    max-width: 800px;
+    margin: auto;
+  }
+`;
 
 const GestionCabanas = () => {
   const [cabanas, setCabanas] = useState([]);
-  const [newCabana, setNewCabana] = useState({
-    nombre: '',
-    costoPorNoche: '',
-    capacidad: '',
-    descripcion: '',
-    estado: false
+  const [newCabin, setNewCabin] = useState({
+    name: '',
+    capacity: '',
+    description: '',
+    location: '',
+    cost_per_night: '',
+    is_active: true
   });
+  const [images, setImages] = useState([]);
+  const [selectedCabin, setSelectedCabin] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const refContainer = useRef(null);
+
+  const fetchData = (url, setter) => {
+    fetch(url)
+      .then(response => response.json())
+      .then(data => setter(data));
+  };
+
+  useEffect(() => {
+    fetchData(`${API_URL}/cabins`, setCabanas);
+  }, []);
+
+  useEffect(() => {
+    if (selectedCabin) {
+      fetchData(`${API_URL}/images?cabin_id=${selectedCabin.cabin_id}`, setImages);
+    }
+  }, [selectedCabin]);
 
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setNewCabana((prevCabana) => ({
-      ...prevCabana,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    const { name, value } = e.target;
+    setNewCabin((prevCabin) => ({ ...prevCabin, [name]: value }));
   };
 
-  const handleAddCabana = () => {
-    setCabanas([...cabanas, { ...newCabana, id: Date.now(), deleted: false }]);
-    setNewCabana({ nombre: '', costoPorNoche: '', capacidad: '', descripcion: '', estado: false });
+  const isFormValid = () => {
+    return (
+      newCabin.name &&
+      newCabin.capacity &&
+      newCabin.cost_per_night
+    );
   };
 
-  const handleDeleteCabana = (id) => {
-    setCabanas(cabanas.map(cabana => cabana.id === id ? { ...cabana, deleted: true } : cabana));
+  const handleAddOrUpdateCabin = () => {
+    if (!isFormValid()) return alert("Por favor, completa todos los campos obligatorios.");
+
+    const method = isEditing ? 'PUT' : 'POST';
+    const url = isEditing ? `${API_URL}/cabins/${newCabin.cabin_id}` : `${API_URL}/cabins`;
+
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newCabin)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (isEditing) {
+            setCabanas(cabanas.map(cabin => cabin.cabin_id === newCabin.cabin_id ? newCabin : cabin));
+        } else {
+            setCabanas([...cabanas, data]);
+        }
+        setNewCabin({
+          name: '',
+          capacity: '',
+          description: '',
+          location: '',
+          cost_per_night: '',
+          is_active: true
+        });
+        setIsEditing(false);
+    });
   };
 
-  const handleUpdateCabana = (id) => {
-    const updatedCabana = cabanas.find(cabana => cabana.id === id);
-    if (updatedCabana) {
-      setNewCabana(updatedCabana);
+  const handleDeleteCabin = (id) => {
+    if (window.confirm("¿Estás seguro de que deseas eliminar esta cabaña?")) {
+      fetch(`${API_URL}/cabins/${id}`, {
+        method: 'DELETE'
+      })
+      .then(() => {
+        setCabanas(cabanas.map(cabin => cabin.cabin_id === id ? { ...cabin, is_active: false } : cabin));
+      });
     }
   };
 
-  const handleSaveUpdate = () => {
-    setCabanas(cabanas.map(cabana => cabana.id === newCabana.id ? newCabana : cabana));
-    setNewCabana({ nombre: '', costoPorNoche: '', capacidad: '', descripcion: '', estado: false });
+  const refreshImages = () => {
+    if (selectedCabin) {
+      fetchData(`${API_URL}/images?cabin_id=${selectedCabin.cabin_id}`, setImages);
+    }
   };
-  return (
-    <div>
-      <TopBar 
-        menuItems={[{ label: 'Inicio', path: '/' }]}
-        gestionLinks={[
-          { label: 'Gestión de Usuarios', path: '/gestion/usuarios' },
-          { label: 'Gestión de Cabañas', path: '/gestion/cabanas' },
-          { label: 'Gestión de Reservas', path: '/gestion/reservas' }
-        ]}
-      />
-      <h1>Gestión de Cabañas</h1>
-      <div style={{ marginBottom: '20px' }}>
-        <input 
-          type="text" 
-          name="nombre" 
-          placeholder="Nombre de la cabaña" 
-          value={newCabana.nombre} 
-          onChange={handleInputChange} 
-        />
-        <input 
-          type="number" 
-          name="costoPorNoche" 
-          placeholder="Costo por noche" 
-          value={newCabana.costoPorNoche} 
-          onChange={handleInputChange} 
-        />
-        <input 
-          type="number" 
-          name="capacidad" 
-          placeholder="Capacidad" 
-          value={newCabana.capacidad} 
-          onChange={handleInputChange} 
-        />
-        <input 
-          type="text" 
-          name="descripcion" 
-          placeholder="Descripción" 
-          value={newCabana.descripcion} 
-          onChange={handleInputChange} 
-        />
-        <label>
-          Activa: 
-          <input 
-            type="checkbox" 
-            name="estado" 
-            checked={newCabana.estado} 
-            onChange={handleInputChange} 
-          />
-        </label>
-        
-        {newCabana.id ? (
-          <button onClick={handleSaveUpdate}>Guardar Cambios</button>
-        ) : (
-          <button onClick={handleAddCabana}>Guardar Nueva Cabaña</button>
-        )}
-      </div>
 
-      <h3>Lista de Cabañas</h3>
-      <ul>
-        {cabanas.filter(cabana => !cabana.deleted).map(cabana => (
-          <li key={cabana.id}>
-            <strong>{cabana.nombre}</strong> - ${cabana.costoPorNoche}/noche - Capacidad: {cabana.capacidad} personas
-            <p>{cabana.descripcion}</p>
-            <p>Estado: {cabana.estado ? "Activa" : "Inactiva"}</p>
-            <button onClick={() => handleUpdateCabana(cabana.id)}>Consultar/Actualizar</button>
-            <button onClick={() => handleDeleteCabana(cabana.id)}>Borrar Lógico</button>
-          </li>
-        ))}
-      </ul>
-    </div>
+  return (
+    <Container ref={refContainer}>
+      <NavBar />
+      <h1>Gestión de Cabañas</h1>
+
+      <CabinForm
+        newCabin={newCabin}
+        handleInputChange={handleInputChange}
+        isFormValid={isFormValid}
+        handleAddOrUpdateCabin={handleAddOrUpdateCabin}
+        isEditing={isEditing}
+      />
+
+      {selectedCabin && (
+        <>
+          <ImageUpload cabinId={selectedCabin.cabin_id} refreshImages={refreshImages} />
+          <ImageGallery images={images} />
+        </>
+      )}
+
+      <CabinTable
+        cabanas={cabanas}
+        handleDeleteCabin={handleDeleteCabin}
+        setSelectedCabin={setSelectedCabin}
+        setIsEditing={setIsEditing}
+        setNewCabin={setNewCabin}
+      />
+    </Container>
   );
 };
 
