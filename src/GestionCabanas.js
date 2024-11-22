@@ -1,4 +1,4 @@
-// src/GestionCabanas.js
+// src/GestionCabanas.js prueba push
 import React, { useState } from 'react';
 import TopBar from './components/TopBar';
 

@@ -1,0 +1,37 @@
+/* CabanaTooltip.css */
+.cabana-tooltip {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  width: 160px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  font-size: .5em; 
+  overflow: hidden;
+}
+
+.cabana-tooltip h3 {
+  font-size: 0.85em;
+}
+
+.cabana-tooltip p {
+  font-size: 0.75em; 
+}
+
+.cabana-imagenes {
+  display: flex;
+  gap: 4px;
+  margin-top: 5px;
+}
+
+.cabana-imagenes img {
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+  

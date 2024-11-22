@@ -257,34 +257,42 @@ const GestionReservas = () => {
     setNewReserva({ user_id: '', cabin_id: '', start_date: null, end_date: null, status: 'pending', discount: '', note: '' });
     setIsEditing(false);
   };
-
+  const handleDeleteUsuario = (id) => {
+    if (window.confirm("¿Estás seguro de que deseas eliminar este usuario?")) {
+      fetch(`http://localhost:8001/users/${id}`, {
+        method: 'DELETE'
+      })
+      .then(() => {
+        setUsuarios(usuarios.filter(user => user.user_id !== id));
+      });
+    }
+  };
   const handleDeleteReserva = (id) => {
+    if (window.confirm("¿Estás seguro de que deseas cancelar esta reserva?")) {
     const reservaToCancel = reservas.find(reserva => reserva.booking_id === id);
     if (reservaToCancel) {
-     // const nights = (new Date(reservaToCancel.end_date) - new Date(reservaToCancel.start_date)) / (1000 * 60 * 60 * 24);
-      const selectedCabin = cabanas.find(cabin => cabin.cabin_id === reservaToCancel.cabin_id);
-      const discount = reservaToCancel.discount ? (reservaToCancel.discount / 100) : 0;
-      const cost = selectedCabin.cost_per_night * nights * (1 - discount);
-
-      const cancelNote = `
-      ${reservaToCancel.note}
-      Reserva cancelada el día: ${new Date().toLocaleDateString()}
-      Fecha de reserva: ${new Date(reservaToCancel.start_date).toLocaleDateString()}
-      Noches de reserva: ${nights}
-      Costo de reserva: ${cost.toFixed(2)}
-            `;
-
-      fetch(`https://server-http-mfxe.onrender.com/bookings/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ ...reservaToCancel, status: 'canceled', note: cancelNote })
-      })
-      .then(response => response.json())
-      .then(() => {
-        setReservas(reservas.map(reserva => reserva.booking_id === id ? { ...reserva, status: 'canceled', note: cancelNote } : reserva));
-      });
+          const nights = (new Date(reservaToCancel.end_date) - new Date(reservaToCancel.start_date)) / (1000 * 60 * 60 * 24);
+          const selectedCabin = cabanas.find(cabin => cabin.cabin_id === reservaToCancel.cabin_id);
+          const discount = reservaToCancel.discount ? (reservaToCancel.discount / 100) : 0;
+          const cost = selectedCabin.cost_per_night * nights * (1 - discount);
+          const cancelNote = `
+            ${reservaToCancel.note}
+            Reserva cancelada: ${new Date().toLocaleDateString()}
+            Fecha de reserva: ${new Date(reservaToCancel.start_date).toLocaleDateString()}
+            Noches de reserva: ${nights}
+            Costo de reserva: ${cost.toFixed(2)}
+                  `;
+          fetch(`http://localhost:8001/bookings/${id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            }, body: JSON.stringify({ ...reservaToCancel, status: 'canceled', note: cancelNote })
+          })
+          .then(response => response.json())
+          .then(() => {
+            setReservas(reservas.map(reserva => reserva.booking_id === id ? { ...reserva, status: 'canceled', note: cancelNote } : reserva));
+          });
+     } 
     }
   };
 

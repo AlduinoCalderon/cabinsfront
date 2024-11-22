@@ -6,6 +6,7 @@ import GestionPage from './GestionPage';
 import GestionUsuarios from './GestionUsuarios';
 import GestionCabanas from './GestionCabanas';
 import GestionReservas from './GestionReservas';
+import MapaInteractivo from './MapaInteractivo';
 
 function App() {
   const [cabanas, setCabanas] = useState([
@@ -21,6 +22,7 @@ function App() {
         <Route path="/gestion" element={<GestionPage />} />
         <Route path="/gestion/usuarios" element={<GestionUsuarios />} />
         <Route path="/gestion/cabanas" element={<GestionCabanas />} />
+        <Route path="/mapa" element={<MapaInteractivo />} />
         
         {/* Pasamos la lista de cabanas como prop a GestionReservas */}
         <Route path="/gestion/reservas" element={<GestionReservas cabanas={cabanas} />} />
