@@ -1,10 +1,11 @@
+// ../src/GestionReservas.js
+
 import React, { useState, useEffect, useRef } from 'react';
 import moment from 'moment-timezone';
 import styled from 'styled-components';
 import NavBar from './components/NavBar';
 import ReservationTable from './components/ReservationTable';
-import { API_URL } from './constants';
-import useFetchData from './hooks/useFetchData';
+import { fetchBookings, fetchCabins, fetchUsers, createBooking, updateBooking } from './services/api';
 import { ReservationForm, FormSection, Label, Select, TextArea, Button, Legend, CostLabel } from './components/ReservationForm';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -42,17 +43,9 @@ const GestionReservas = () => {
   const refContainer = useRef(null);
 
   useEffect(() => {
-    fetch('https://server-http-mfxe.onrender.com/bookings')
-      .then(response => response.json())
-      .then(data => setReservas(data));
-
-    fetch('https://server-http-mfxe.onrender.com/cabins')
-      .then(response => response.json())
-      .then(data => setCabanas(data));
-
-    fetch('https://server-http-mfxe.onrender.com/users')
-      .then(response => response.json())
-      .then(data => setUsuarios(data));
+    fetchBookings().then(data => setReservas(data));
+    fetchCabins().then(data => setCabanas(data));
+    fetchUsers().then(data => setUsuarios(data));
   }, []);
 
   useEffect(() => {
@@ -115,32 +108,21 @@ const GestionReservas = () => {
     if (!isFormValid() && !isEditing) return alert("Por favor, completa todos los campos obligatorios o corrige las fechas.");
 
     const method = isEditing ? 'PUT' : 'POST';
-    const url = isEditing ? `https://server-http-mfxe.onrender.com/bookings/${newReserva.booking_id}` : 'https://server-http-mfxe.onrender.com/bookings';
-    // Imprimir la fecha de llegada antes de enviar
-    console.log("Fecha de llegada:", newReserva.start_date);
+    const requestFunc = isEditing ? updateBooking : createBooking;
+    const requestId = isEditing ? newReserva.booking_id : null;
 
-    fetch(url, {
-        method: method,
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(newReserva)
-    })
-    .then(response => response.json())
-    .then(data => {
+    requestFunc(requestId, newReserva)
+      .then(data => {
         if (isEditing) {
-            setReservas(reservas.map(reserva => reserva.booking_id === newReserva.booking_id ? newReserva : reserva));
+          setReservas(reservas.map(reserva => reserva.booking_id === newReserva.booking_id ? newReserva : reserva));
         } else {
-            setReservas([...reservas, data.Booking]);
+          setReservas([...reservas, data.Booking]);
         }
-
-        // Actualiza la lista de reservas después de agregar
-        return fetch('https://server-http-mfxe.onrender.com/bookings');
-    })
-    .then(response => response.json())
-    .then(data => {
+        return fetchBookings();
+      })
+      .then(data => {
         setReservas(data);
-    });
+      });
 
     setNewReserva({ user_id: '', cabin_id: '', start_date: null, nights:1, status: 'pending', discount: '', note: '' });
     setIsEditing(false);
@@ -157,18 +139,12 @@ const GestionReservas = () => {
 
         const cancelNote = `Reserva cancelada el día: ${moment().format('YYYY-MM-DD')}`;
 
-      fetch(`https://server-http-mfxe.onrender.com/bookings/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ ...reservaToCancel, status: 'canceled', note: cancelNote })
-      })
-      .then(response => response.json())
-      .then(() => {
-        setReservas(reservas.map(reserva => reserva.booking_id === id ? { ...reserva, status: 'canceled', note: cancelNote } : reserva));
-      });
-    }}
+        updateBooking(id, { ...reservaToCancel, status: 'canceled', note: cancelNote })
+          .then(() => {
+            setReservas(reservas.map(reserva => reserva.booking_id === id ? { ...reserva, status: 'canceled', note: cancelNote } : reserva));
+          });
+      }
+    }
   };
 
   const handleEditReserva = (reserva) => {
@@ -210,7 +186,7 @@ const GestionReservas = () => {
   };
 
   const filteredReservas = reservas.filter(reserva => {
-       if (filterField === 'user' && filterValue) {
+    if (filterField === 'user' && filterValue) {
       return reserva.user_id === parseInt(filterValue);
     } else if (filterField === 'cabin' && filterValue) {
       return reserva.cabin_id === parseInt(filterValue);
