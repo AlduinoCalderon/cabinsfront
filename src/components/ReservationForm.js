@@ -112,7 +112,7 @@ export const ReservationForm = ({
 
     <GridContainer>
       <DatePickerWrapper> 
-        <Label>Selecciona la fecha de llegada:</Label>
+      <p><strong>Selecciona la fecha de llegada:</strong></p>
         <DatePicker
           selected={newReserva.start_date}
           onChange={handleDateChange}

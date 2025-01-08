@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import moment from 'moment-timezone';
-import { Select, Container } from './styles/styles';
+import { Select, Container, DatePickerWrapper } from './styles/styles';
 import NavBar from './components/NavBar';
 import ReservationTable from './components/ReservationTable';
 import { fetchBookings, fetchCabins, fetchUsers, updateBooking } from './services/api';
@@ -257,11 +257,14 @@ const GestionReservas = () => {
           <>
             <Label>Valor del filtro:</Label>
             {filterField === 'date' ? (
-              <DatePicker
+              <DatePickerWrapper>
+                <DatePicker
                 selected={filterValue ? new Date(filterValue) : null}
                 onChange={(date) => setFilterValue(date ? moment(date).format('YYYY-MM-DD') : '')}
                 inline
               />
+              </DatePickerWrapper>
+              
             ) : (
               <Select value={filterValue} onChange={handleFilterValueChange}>
                 <option value="">Ver todo</option>
@@ -278,13 +281,6 @@ const GestionReservas = () => {
             )}
           </>
         )}
-        <Label>Estado de la cabaña:</Label>
-        <Select value={filterStatus} onChange={handleFilterStatusChange}>
-          <option value="">Todos los estados</option>
-          <option value="pending">Pendiente</option>
-          <option value="confirmed">Confirmada</option>
-          <option value="canceled">Cancelada</option>
-        </Select>
       </FormSection>
 
       <ReservationTable
