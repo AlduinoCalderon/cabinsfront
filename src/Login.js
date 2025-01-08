@@ -1,4 +1,3 @@
-// src/Login.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input, Button, Container, ErrorText } from './styles/styles';
@@ -9,6 +8,8 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [showResetConfirmation, setShowResetConfirmation] = useState(false);
+  const [userToReset, setUserToReset] = useState(null);
   const navigate = useNavigate();
 
   const defaultPassword = 'contraseña123';
@@ -41,25 +42,31 @@ const Login = () => {
         } else if (user && user.password === password) {
           // Si el usuario y la contraseña coinciden
           localStorage.setItem('authToken', 'dummyToken'); // Guardar token de autenticación
-          navigate('/dashboard'); // Redirigir a la página protegida
+          navigate('/gestion'); // Redirigir a la página protegida
         } else {
           // Si la contraseña es incorrecta
-          setErrorMessage('Contraseña incorrecta. Su contraseña ha sido restablecida.');
-          // Actualizar contraseña a la predeterminada
-          fetch(`https://server-http-mfxe.onrender.com/users/${user.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...user, password: defaultPassword }), // Restablecer contraseña
-          })
-          .then(() => {
-            setPassword(defaultPassword); // Rellenar el campo de contraseña con la predeterminada
-            alert('La contraseña ha sido restablecida a "contraseña123"'); // Notificación al usuario
-          })
-          .catch(err => {
-            setErrorMessage('Error al restablecer la contraseña');
-          });
+          setErrorMessage('Contraseña incorrecta');
+          setUserToReset(user); // Guardar el usuario para restablecer la contraseña
         }
       });
+  };
+
+  const handleResetPassword = () => {
+    if (window.confirm('¿Deseas restablecer la contraseña?')) {
+      fetch(`https://server-http-mfxe.onrender.com/users/${userToReset.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...userToReset, password: defaultPassword }), // Restablecer contraseña
+      })
+        .then(() => {
+          alert('La contraseña ha sido restablecida a "contraseña123"');
+          setPassword(defaultPassword); // Rellenar el campo de contraseña con la predeterminada
+          setErrorMessage(''); // Limpiar mensaje de error
+        })
+        .catch(err => {
+          setErrorMessage('Error al restablecer la contraseña');
+        });
+    }
   };
 
   return (
@@ -87,10 +94,19 @@ const Login = () => {
         <Button onClick={handleLogin} disabled={!email || !password}>Iniciar sesión</Button>
 
         {errorMessage && <p>{errorMessage}</p>}
-        
+
         {errorMessage === 'Usuario no encontrado' && (
           <div>
             <p>¿No tienes cuenta? <a href="/signup">Regístrate aquí</a></p>
+          </div>
+        )}
+
+        {errorMessage === 'Contraseña incorrecta' && userToReset && (
+          <div>
+            <p>
+              ¿Olvidaste tu contraseña?{' '}
+              <a href="#" onClick={handleResetPassword}>Restablecer contraseña</a>
+            </p>
           </div>
         )}
       </div>
