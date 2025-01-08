@@ -12,7 +12,7 @@ const Verified = () => {
     if (email && verification_token) {
         console.log(email, verification_token);
       // Hacer una solicitud para verificar el token
-      fetch(`https://server-http-mfxe.onrender.com/verify-email/${email}/${verification_token}`)
+      fetch(`https://server-http-mfxe.onrender.com/users/verify-email/${email}/${verification_token}`)
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
