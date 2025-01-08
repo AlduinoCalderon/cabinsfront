@@ -16,11 +16,11 @@ const Verified = () => {
       fetch(`https://server-http-mfxe.onrender.com/users/verify-email/${email}/${verification_token}`)
         .then((response) => response.json())
         .then((data) => {
-          // Verificar si la respuesta contiene el usuario verificado
-          if (data.user) {
+          // Si el backend devuelve un mensaje de éxito
+          if (data.message === 'Correo verificado con éxito') {
             setIsVerified(true);
           } else {
-            setErrorMessage('No se pudo verificar el correo. El enlace puede haber expirado.');
+            setErrorMessage(data.message); // Usar el mensaje enviado por el backend
           }
         })
         .catch(() => {
