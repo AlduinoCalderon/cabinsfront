@@ -22,10 +22,9 @@ const NavBarItem = styled.a`
 
 const NavBar = () => (
   <NavBarContainer>
-    <NavBarItem href="/">Inicio</NavBarItem>
-    <NavBarItem href="/gestion/usuarios">Gestión de Usuarios</NavBarItem>
-    <NavBarItem href="/gestion/cabanas">Gestión de Cabañas</NavBarItem>
-    <NavBarItem href="/gestion/reservas">Gestión de Reservas</NavBarItem>
+    <NavBarItem href="/gestion/usuarios">Usuarios</NavBarItem>
+    <NavBarItem href="/gestion/cabanas">Cabañas</NavBarItem>
+    <NavBarItem href="/gestion/reservas">Reservas</NavBarItem>
   </NavBarContainer>
 );
 

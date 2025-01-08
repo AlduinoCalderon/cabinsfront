@@ -1,21 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import styled from 'styled-components';
 import NavBar from './components/NavBar';
 import CabinTable from './components/CabinTable';
 import CabinForm from './components/CabinForm';
 import { API_URL } from './constants';
-import useFetchData from './hooks/useFetchData';
+import { Container} from './styles/styles';
 
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-
-  @media (min-width: 768px) {
-    max-width: 800px;
-    margin: auto;
-  }
-`;
 
 const GestionCabanas = () => {
   const [cabanas, setCabanas] = useState([]);

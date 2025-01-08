@@ -1,18 +1,7 @@
-// src/GestionUsuarios.js
 import React, { useState, useEffect, useRef } from 'react';
-import TopBar from './components/TopBar';
 import styled from 'styled-components';
 import NavBar from './components/NavBar';
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-
-  @media (min-width: 768px) {
-    max-width: 800px;
-    margin: auto;
-  }
-`;
+import { RedButton, Button, BlueButton, YellowButton, Input, Select, Container } from './styles/styles';
 
 const FormSection = styled.div`
   display: flex;
@@ -23,27 +12,6 @@ const FormSection = styled.div`
 const Label = styled.label`
   margin-bottom: 5px;
   font-weight: bold;
-`;
-
-const Input = styled.input`
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-`;
-
-const Button = styled.button`
-  padding: 10px;
-  background-color: #007BFF;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-
-  &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
 `;
 
 const Table = styled.table`
@@ -71,6 +39,12 @@ const Table = styled.table`
   }
 `;
 
+const ErrorText = styled.div`
+  color: red;
+  font-size: 0.9em;
+  margin-top: 5px;
+`;
+
 const GestionUsuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
   const [newUsuario, setNewUsuario] = useState({
@@ -83,6 +57,7 @@ const GestionUsuarios = () => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [filterRole, setFilterRole] = useState('all');
+  const [errorMessages, setErrorMessages] = useState({});
   const refContainer = useRef(null);
 
   useEffect(() => {
@@ -98,19 +73,56 @@ const GestionUsuarios = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewUsuario({ ...newUsuario, [name]: value });
+    validateForm({ ...newUsuario, [name]: value });
+  };
+
+  const validateForm = (usuario) => {
+    const errors = {};
+
+    if (usuario.password && usuario.confirmPassword && usuario.password !== usuario.confirmPassword) {
+      errors.passwordMismatch = 'Las contraseñas no coinciden';
+    } else {
+      delete errors.passwordMismatch;
+    }
+
+    if (usuario.email && !validateEmail(usuario.email)) {
+      errors.invalidEmail = 'Correo electrónico no válido';
+    } else {
+      delete errors.invalidEmail;
+    }
+
+    setErrorMessages(errors);
   };
 
   const isFormValid = () => {
     return newUsuario.first_name && newUsuario.last_name && newUsuario.email && validateEmail(newUsuario.email) && newUsuario.password === newUsuario.confirmPassword;
   };
-
+  
+  const checkIfEmailExists = (email) => {
+    return usuarios.some(user => user.email.toLowerCase() === email.toLowerCase());
+  };
+  
   const handleAddOrUpdateUsuario = () => {
-    if (!isFormValid()) {
-      return alert("Por favor, completa todos los campos obligatorios y asegúrate de que las contraseñas coinciden.");
+    // Validación de contraseñas
+    if (newUsuario.password !== newUsuario.confirmPassword) {
+      return alert("Las contraseñas no coinciden.");
     }
+  
+    // Validación de formato de correo
+    if (!validateEmail(newUsuario.email)) {
+      return alert("El formato del correo electrónico no es válido.");
+    }
+  
+    // Validación de correo repetido
+    if (checkIfEmailExists(newUsuario.email) && !isEditing) {
+      setNewUsuario({ first_name: '', last_name: '', email: '', password: '', confirmPassword: '', role: 'user' });
+      setIsEditing(false);
+      return alert("El correo electrónico ya está registrado.");
+    }
+  
     const method = isEditing ? 'PUT' : 'POST';
     const url = isEditing ? `https://server-http-mfxe.onrender.com/users/${newUsuario.user_id}` : 'https://server-http-mfxe.onrender.com/users/';
-
+  
     fetch(url, {
       method: method,
       headers: {
@@ -127,7 +139,7 @@ const GestionUsuarios = () => {
       }
       fetchUsuarios();
     });
-
+  
     setNewUsuario({ first_name: '', last_name: '', email: '', password: '', confirmPassword: '', role: 'user' });
     setIsEditing(false);
   };
@@ -147,9 +159,6 @@ const GestionUsuarios = () => {
     const passwordactual = user.password;
     user.confirmPassword = passwordactual;
     setNewUsuario(user);
-
-    
-    
     setIsEditing(true);
     refContainer.current.scrollIntoView({ behavior: 'smooth' });
   };
@@ -176,16 +185,10 @@ const GestionUsuarios = () => {
   };
 
   const filteredUsuarios = filterRole === 'all' ? usuarios : usuarios.filter(user => user.role === filterRole);
+  
   return (
     <Container ref={refContainer}>
-      <NavBar 
-        menuItems={[{ label: 'Inicio', path: '/' }]}
-        gestionLinks={[ 
-          { label: 'Gestión de Usuarios', path: '/gestion/usuarios' },
-          { label: 'Gestión de Cabañas', path: '/gestion/cabanas' },
-          { label: 'Gestión de Reservas', path: '/gestion/reservas' }
-        ]}
-      />
+      <NavBar/>
       <h1>Gestión de Usuarios</h1>
 
       <FormSection>
@@ -210,6 +213,7 @@ const GestionUsuarios = () => {
           value={newUsuario.email}
           onChange={handleInputChange}
         />
+        {errorMessages.invalidEmail && <ErrorText>{errorMessages.invalidEmail}</ErrorText>}
 
         <Label>Contraseña:</Label>
         <Input 
@@ -226,12 +230,13 @@ const GestionUsuarios = () => {
           value={newUsuario.confirmPassword}
           onChange={handleInputChange}
         />
+        {errorMessages.passwordMismatch && <ErrorText>{errorMessages.passwordMismatch}</ErrorText>}
 
         <Label>Rol:</Label>
-        <select name="role" value={newUsuario.role} onChange={handleInputChange}>
+        <Select name="role" value={newUsuario.role} onChange={handleInputChange}>
           <option value="user">Usuario</option>
           <option value="admin">Administrador</option>
-        </select>
+        </Select>
       </FormSection>
 
       <Button
@@ -242,35 +247,29 @@ const GestionUsuarios = () => {
       </Button>
 
       <Label>Filtrar por Rol:</Label>
-      <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)}>
+      <Select value={filterRole} onChange={(e) => setFilterRole(e.target.value)}>
         <option value="all">Ver Todos</option>
         <option value="user">Usuario</option>
         <option value="admin">Administrador</option>
-      </select>
+      </Select>
 
       <Table>
         <thead>
           <tr>
-            <th>ID</th>
             <th>Nombre</th>
-            <th>Apellido</th>
             <th>Email</th>
-            <th>Rol</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           {filteredUsuarios.map(user => (
-            <tr key={user.user_id} title={`Creado: ${new Date(user.registration_date).toLocaleString()}, Modificado: ${new Date(user.modified_date).toLocaleString()}`}>
-              <td>{user.user_id}</td>
-              <td>{user.first_name}</td>
-              <td>{user.last_name}</td>
-              <td>{user.email}</td>
-              <td>{user.role}</td>
+            <tr key={user.user_id} title={`ID: ${user.user_id}, Rol: ${user.role}, Creado: ${new Date(user.registration_date).toLocaleString()}, Modificado: ${new Date(user.modified_date).toLocaleString()}`}>
+              <td>{user.first_name} {user.last_name}</td>
+              <td style={{ fontSize: '0.8em'}}>{user.email}</td>
               <td>
-                <Button onClick={() => handleEditUsuario(user)}>Editar</Button>
-                <Button onClick={() => handleDeleteUsuario(user.user_id)}>Eliminar</Button>
-                <Button onClick={() => handleResetPassword(user.user_id)}>Resetear Contraseña</Button>
+                <BlueButton onClick={() => handleEditUsuario(user)}>Editar</BlueButton>
+                <RedButton onClick={() => handleDeleteUsuario(user.user_id)}>Eliminar</RedButton>
+                <YellowButton onClick={() => handleResetPassword(user.user_id)}>Resetear Contraseña</YellowButton>
               </td>
             </tr>
           ))}

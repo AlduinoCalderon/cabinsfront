@@ -1,6 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 
+import { GridContainer, Button, Input } from '../styles/styles';
+
 export const FormSection = styled.div`
   display: flex;
   flex-direction: column;
@@ -12,32 +14,13 @@ export const Label = styled.label`
   font-weight: bold;
 `;
 
-export const Input = styled.input`
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-`;
+
 
 export const TextArea = styled.textarea`
   padding: 10px;
   margin-bottom: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
-`;
-
-export const Button = styled.button`
-  padding: 10px;
-  background-color: #007BFF;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-
-  &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
 `;
 
 const CabinForm = ({ 
@@ -55,34 +38,30 @@ const CabinForm = ({
         value={newCabin.name} 
         onChange={handleInputChange} 
       />
-
-      <Label>Capacidad:</Label>
-      <Input 
+      <GridContainer>
+        <div><p><strong>Capacidad:</strong></p>
+        <Input 
         type="number" 
         name="capacity" 
         value={newCabin.capacity} 
         onChange={handleInputChange} 
-      />
+        />
+        </div>
+        <div><p><strong>Costo por Noche:</strong></p>
+          <Input 
+            type="number" 
+            name="cost_per_night" 
+            value={newCabin.cost_per_night} 
+            onChange={handleInputChange} 
+          />
+          </div>
+      </GridContainer>
+      
 
       <Label>Descripción:</Label>
       <TextArea 
         name="description" 
         value={newCabin.description} 
-        onChange={handleInputChange} 
-      />
-
-      <Label>Ubicación:</Label>
-      <Input 
-        name="location" 
-        value={newCabin.location} 
-        onChange={handleInputChange} 
-      />
-
-      <Label>Costo por Noche:</Label>
-      <Input 
-        type="number" 
-        name="cost_per_night" 
-        value={newCabin.cost_per_night} 
         onChange={handleInputChange} 
       />
 

@@ -2,24 +2,15 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import moment from 'moment-timezone';
-import styled from 'styled-components';
+import { Select, Container } from './styles/styles';
 import NavBar from './components/NavBar';
 import ReservationTable from './components/ReservationTable';
-import { fetchBookings, fetchCabins, fetchUsers, createBooking, updateBooking } from './services/api';
-import { ReservationForm, FormSection, Label, Select, TextArea, Button, Legend, CostLabel } from './components/ReservationForm';
+import { fetchBookings, fetchCabins, fetchUsers, updateBooking } from './services/api';
+import { ReservationForm, FormSection, Label } from './components/ReservationForm';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
 
-  @media (min-width: 768px) {
-    max-width: 800px;
-    margin: auto;
-  }
-`;
 
 const GestionReservas = () => {
   const [reservas, setReservas] = useState([]);
@@ -108,21 +99,32 @@ const GestionReservas = () => {
     if (!isFormValid() && !isEditing) return alert("Por favor, completa todos los campos obligatorios o corrige las fechas.");
 
     const method = isEditing ? 'PUT' : 'POST';
-    const requestFunc = isEditing ? updateBooking : createBooking;
-    const requestId = isEditing ? newReserva.booking_id : null;
+    const url = isEditing ? `https://server-http-mfxe.onrender.com/bookings/${newReserva.booking_id}` : 'https://server-http-mfxe.onrender.com/bookings';
+    // Imprimir la fecha de llegada antes de enviar
+    console.log("Fecha de llegada:", newReserva.start_date);
 
-    requestFunc(requestId, newReserva)
-      .then(data => {
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newReserva)
+    })
+    .then(response => response.json())
+    .then(data => {
         if (isEditing) {
-          setReservas(reservas.map(reserva => reserva.booking_id === newReserva.booking_id ? newReserva : reserva));
+            setReservas(reservas.map(reserva => reserva.booking_id === newReserva.booking_id ? newReserva : reserva));
         } else {
-          setReservas([...reservas, data.Booking]);
+            setReservas([...reservas, data.Booking]);
         }
-        return fetchBookings();
-      })
-      .then(data => {
+
+        // Actualiza la lista de reservas después de agregar
+        return fetch('https://server-http-mfxe.onrender.com/bookings');
+    })
+    .then(response => response.json())
+    .then(data => {
         setReservas(data);
-      });
+    });
 
     setNewReserva({ user_id: '', cabin_id: '', start_date: null, nights:1, status: 'pending', discount: '', note: '' });
     setIsEditing(false);
@@ -137,7 +139,7 @@ const GestionReservas = () => {
         const discount = reservaToCancel.discount ? (reservaToCancel.discount / 100) : 0;
         const cost = selectedCabin.cost_per_night * nights * (1 - discount);
 
-        const cancelNote = `Reserva cancelada el día: ${moment().format('YYYY-MM-DD')}`;
+        const cancelNote = `Reserva cancelada el día: ${moment().format('YYYY-MM-DD')}, Costo total: $${cost.toFixed(2)}`;
 
         updateBooking(id, { ...reservaToCancel, status: 'canceled', note: cancelNote })
           .then(() => {

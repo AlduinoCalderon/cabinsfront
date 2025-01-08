@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { BlueButton, RedButton } from '../styles/styles';
 
 const Table = styled.table`
   width: 100%;
@@ -24,22 +25,18 @@ const Table = styled.table`
   tr:hover {
     background-color: #f1f1f1;
   }
-`;
 
-const Button = styled.button`
-  padding: 5px 10px;
-  margin-right: 5px;
-  background-color: ${props => props.delete ? 'red' : '#007BFF'};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  max-width: 100%;
 
-  &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
+  /* Ajustar el tamaño de la fuente para pantallas pequeñas */
+  @media (max-width: 768px) {
+    th, td {
+      font-size: 0.8em; /* Disminuye el tamaño de las letras */
+      padding: 6px; /* Ajusta el espaciado */
+    }
   }
 `;
+
 
 const CabinTable = ({ cabins, handleEditCabin, handleDeleteCabin }) => {
   return (
@@ -48,9 +45,8 @@ const CabinTable = ({ cabins, handleEditCabin, handleDeleteCabin }) => {
         <tr>
           <th>ID</th>
           <th>Nombre</th>
-          <th>Capacidad</th>
-          <th>Descripción</th>
-          <th>Ubicación</th>
+          <th style={{ fontSize: '0.8em'}}>Capacidad</th>
+          <th style={{ fontSize: '0.8em'}}>Descripción</th>
           <th>Costo por Noche</th>
           <th>Acciones</th>
         </tr>
@@ -61,12 +57,11 @@ const CabinTable = ({ cabins, handleEditCabin, handleDeleteCabin }) => {
             <td>{cabin.cabin_id}</td>
             <td>{cabin.name}</td>
             <td>{cabin.capacity}</td>
-            <td>{cabin.description}</td>
-            <td>{cabin.location}</td>
-            <td>{cabin.cost_per_night}</td>
+            <td style={{ fontSize: '0.8em'}}>{cabin.description}</td>
+            <td>${cabin.cost_per_night}</td>
             <td>
-              <Button onClick={() => handleEditCabin(cabin)}>Editar</Button>
-              <Button delete onClick={() => handleDeleteCabin(cabin.cabin_id)}>Eliminar</Button>
+              <BlueButton onClick={() => handleEditCabin(cabin)}>Editar</BlueButton>
+              <RedButton delete onClick={() => handleDeleteCabin(cabin.cabin_id)}>Eliminar</RedButton>
             </td>
           </tr>
         ))}
