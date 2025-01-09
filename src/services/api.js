@@ -11,6 +11,10 @@ export const fetchCabins = async () => {
     const response = await fetch(`${API_URL}/cabins`);
     return await response.json();
 };
+export const fetchRecentBookings = async () => {
+    const response = await fetch(`${API_URL}/bookings/new`);
+    return await response.json();
+};
 
 export const fetchUsers = async () => {
     const response = await fetch(`${API_URL}/users`);

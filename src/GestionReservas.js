@@ -5,7 +5,7 @@ import moment from 'moment-timezone';
 import { Select, Container, DatePickerWrapper } from './styles/styles';
 import NavBar from './components/NavBar';
 import ReservationTable from './components/ReservationTable';
-import { fetchBookings, fetchCabins, fetchUsers, updateBooking } from './services/api';
+import { fetchBookings, fetchCabins, fetchUsers, updateBooking, fetchRecentBookings } from './services/api';
 import { ReservationForm, FormSection, Label } from './components/ReservationForm';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -34,7 +34,7 @@ const GestionReservas = () => {
   const refContainer = useRef(null);
 
   useEffect(() => {
-    fetchBookings().then(data => setReservas(data));
+    fetchRecentBookings().then(data => setReservas(data));
     fetchCabins().then(data => setCabanas(data));
     fetchUsers().then(data => setUsuarios(data));
   }, []);
@@ -119,7 +119,7 @@ const GestionReservas = () => {
         }
 
         // Actualiza la lista de reservas después de agregar
-        return fetch('https://server-http-mfxe.onrender.com/bookings');
+        return fetch('https://server-http-mfxe.onrender.com/bookings/new');
     })
     .then(response => response.json())
     .then(data => {
@@ -159,16 +159,13 @@ const GestionReservas = () => {
   };
 
   const handleFilterChange = (e) => {
+    fetchBookings().then(data => setReservas(data));
     setFilterField(e.target.value);
     setFilterValue('');
   };
 
   const handleFilterValueChange = (e) => {
     setFilterValue(e.target.value);
-  };
-
-  const handleFilterStatusChange = (e) => {
-    setFilterStatus(e.target.value);
   };
 
   const calculateCost = () => {
