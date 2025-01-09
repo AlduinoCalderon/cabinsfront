@@ -1,16 +1,20 @@
-// src/components/TopBar.js
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
 const TopBarContainer = styled.div`
-  width: 96.9%;
+  width: 100%;
   height: 50px;
-  background-color: #007BFF; // Azul
+  background-color: #007BFF;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   padding: 0 20px;
+  position: relative;
+`;
+
+const MenuIconContainer = styled.div`
+  margin-left: auto;
   position: relative;
 `;
 
@@ -21,7 +25,7 @@ const MenuIcon = styled.div`
   justify-content: space-around;
   width: 25px;
   height: 20px;
-  
+
   div {
     width: 100%;
     height: 3px;
@@ -31,8 +35,8 @@ const MenuIcon = styled.div`
 
 const DropdownMenu = styled.div`
   position: absolute;
-  top: 45px;
-  right: 40px;
+  top: 50px;
+  right: 0;
   background: white;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   border-radius: 5px;
@@ -46,7 +50,7 @@ const DropdownItem = styled(Link)`
   padding: 10px 20px;
   color: #333;
   text-decoration: none;
-  
+
   &:hover {
     background-color: #f0f0f0;
   }
@@ -55,14 +59,13 @@ const DropdownItem = styled(Link)`
 const GestionLinksContainer = styled.div`
   display: flex;
   gap: 20px;
-  margin-right: auto; 
 `;
 
 const GestionLink = styled(Link)`
   color: white;
   text-decoration: none;
   font-weight: bold;
-  
+
   &:hover {
     text-decoration: underline;
   }
@@ -70,6 +73,16 @@ const GestionLink = styled(Link)`
 
 const TopBar = ({ menuItems, gestionLinks }) => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const timerRef = React.useRef(null);
+
+  const handleMouseEnter = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setIsMenuOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    timerRef.current = setTimeout(() => setIsMenuOpen(false), 333);
+  };
 
   return (
     <TopBarContainer>
@@ -82,20 +95,26 @@ const TopBar = ({ menuItems, gestionLinks }) => {
           ))}
         </GestionLinksContainer>
       )}
-      <MenuIcon onClick={() => setIsMenuOpen(!isMenuOpen)}>
-        <div></div>
-        <div></div>
-        <div></div>
-      </MenuIcon>
-      <DropdownMenu open={isMenuOpen}>
-        {menuItems.map((item, index) => (
-          <DropdownItem key={index} to={item.path}>
-            {item.label}
-          </DropdownItem>
-        ))}
-      </DropdownMenu>
+      <MenuIconContainer
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <MenuIcon>
+          <div></div>
+          <div></div>
+          <div></div>
+        </MenuIcon>
+        <DropdownMenu open={isMenuOpen}>
+          {menuItems.map((item, index) => (
+            <DropdownItem key={index} to={item.path}>
+              {item.label}
+            </DropdownItem>
+          ))}
+        </DropdownMenu>
+      </MenuIconContainer>
     </TopBarContainer>
   );
 };
 
 export default TopBar;
+ 
