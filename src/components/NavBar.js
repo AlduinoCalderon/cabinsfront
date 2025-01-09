@@ -91,14 +91,15 @@ const NavBar = ({ onLogout }) => {
     navigate('/');
   };
 
-  const token = localStorage.getItem('authToken');
+  const user = localStorage.getItem('user');
+  const userinfo = JSON.parse(user);
   let userName = 'Invitado';
 
-  if (token ) {
+  if (user) {
     try {
-      console.log(userName, "tokeninfo:", token);
-     // const payload = JSON.parse(atob(token.split('.')[1]));
-      //userName = payload.first_name || 'Usuario';
+      console.log(user, userinfo);
+      console.log(userName, "ahora es", userinfo.first_name);
+      userName = userinfo.first_name || 'Usuario';
     } catch (error) {
       console.warn('Token inválido:', error);
     }

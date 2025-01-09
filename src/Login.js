@@ -41,7 +41,8 @@ const Login = () => {
           setErrorMessage('Usuario no encontrado');
         } else if (user && user.password === password) {
           // Si el usuario y la contraseña coinciden
-          localStorage.setItem('authToken', 'dummyToken'); // Guardar token de autenticación
+          localStorage.setItem('authToken', 'dummyToken'); 
+          localStorage.setItem('user', JSON.stringify(user));
           navigate('/gestion'); // Redirigir a la página protegida
         } else {
           // Si la contraseña es incorrecta
