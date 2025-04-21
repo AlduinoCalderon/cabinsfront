@@ -1,70 +1,100 @@
-# Getting Started with Create React App
+# Sistema de Gestión de Cabañas
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Sistema web para la gestión de reservas de cabañas, desarrollado con React y Node.js.
 
-## Available Scripts
+## Características
 
-In the project directory, you can run:
+- Autenticación de usuarios (registro, login, verificación de email)
+- Gestión de usuarios (crear, editar, eliminar)
+- Gestión de cabañas (crear, editar, eliminar)
+- Gestión de reservas
+- Panel de administración
+- Interfaz responsiva y moderna
 
-### `npm start`
+## Tecnologías Utilizadas
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Frontend:**
+  - React.js
+  - React Router
+  - Styled Components
+  - Axios
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **Backend:**
+  - Node.js
+  - Express
+  - PostgreSQL
+  - JWT para autenticación
 
-### `npm test`
+## Instalación
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. Clonar el repositorio:
+```bash
+git clone https://github.com/AlduinoCalderon/cabins.git
+cd cabins
+```
 
-### `npm run build`
+2. Instalar dependencias:
+```bash
+npm install
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+3. Configurar variables de entorno:
+Crear un archivo `.env` en la raíz del proyecto con las siguientes variables:
+```env
+REACT_APP_API_URL=http://localhost:3001/api
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+4. Iniciar el servidor de desarrollo:
+```bash
+npm start
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Estructura del Proyecto
 
-### `npm run eject`
+```
+src/
+├── components/     # Componentes reutilizables
+├── pages/         # Páginas de la aplicación
+├── hooks/         # Custom hooks
+├── services/      # Servicios de API
+├── styles/        # Estilos globales y componentes estilizados
+└── utils/         # Utilidades y helpers
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Características Principales
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Autenticación
+- Registro de usuarios con verificación de email
+- Login con JWT
+- Recuperación de contraseña
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Gestión de Usuarios
+- CRUD completo de usuarios
+- Roles de usuario (admin, user)
+- Gestión de permisos
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Gestión de Cabañas
+- Creación y edición de cabañas
+- Gestión de imágenes
+- Estados de disponibilidad
 
-## Learn More
+### Reservas
+- Sistema de reservas
+- Calendario de disponibilidad
+- Historial de reservas
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Contribución
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+1. Fork el proyecto
+2. Crear una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abrir un Pull Request
 
-### Code Splitting
+## Licencia
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE.md](LICENSE.md) para más detalles.
 
-### Analyzing the Bundle Size
+## Autor
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+**AlduinoCalderon** - [GitHub](https://github.com/AlduinoCalderon)

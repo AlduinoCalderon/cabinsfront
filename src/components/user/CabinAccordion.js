@@ -1,0 +1,269 @@
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+const AccordionContainer = styled.div`
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+`;
+
+const DateSelector = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+`;
+
+const DateInput = styled.input`
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+`;
+
+const NightsInput = styled.input`
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  width: 100px;
+`;
+
+const CardsContainer = styled.div`
+  display: flex;
+  gap: 10px;
+  margin: 0 auto;
+  height: 340px;
+  overflow-x: auto;
+  padding: 10px;
+  
+  @media (min-width: 768px) {
+    overflow-x: hidden;
+  }
+`;
+
+const Card = styled.div`
+  min-width: 70px;
+  height: 100%;
+  border-radius: 30px;
+  display: flex;
+  align-items: flex-end;
+  flex-grow: 1;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: flex-grow 0.5s ease;
+  opacity: ${props => props.isAvailable ? 1 : 0.5};
+  
+  &:hover {
+    flex-grow: 7;
+  }
+`;
+
+const CardImage = styled.img`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+`;
+
+const CardContent = styled.div`
+  position: relative;
+  z-index: 1;
+  padding: 20px;
+  color: #fff;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  width: 100%;
+`;
+
+const CardTitle = styled.h3`
+  margin-left: 10px;
+  transform: translateY(100%);
+  opacity: 0;
+  transition: all 0.5s ease;
+  
+  ${Card}:hover & {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
+const CardDescription = styled.p`
+  margin-left: 10px;
+  transform: translateY(100%);
+  opacity: 0;
+  transition: all 0.5s ease;
+  transition-delay: 0.1s;
+  
+  ${Card}:hover & {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
+const CardPrice = styled.div`
+  margin-left: 10px;
+  margin-top: 10px;
+  font-weight: bold;
+  transform: translateY(100%);
+  opacity: 0;
+  transition: all 0.5s ease;
+  transition-delay: 0.2s;
+  
+  ${Card}:hover & {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
+const ReserveButton = styled.button`
+  margin-left: 10px;
+  margin-top: 10px;
+  padding: 8px 15px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transform: translateY(100%);
+  opacity: 0;
+  transition: all 0.5s ease;
+  transition-delay: 0.3s;
+  
+  ${Card}:hover & {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  &:hover {
+    background-color: #45a049;
+  }
+  
+  &:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+`;
+
+const CabinAccordion = () => {
+  const [cabins, setCabins] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [nights, setNights] = useState(1);
+  const [availableCabins, setAvailableCabins] = useState([]);
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    const fetchCabins = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('http://localhost:3001/api/cabins');
+        setCabins(response.data);
+        setLoading(false);
+      } catch (err) {
+        setError('Error al cargar las cabañas');
+        setLoading(false);
+        console.error(err);
+      }
+    };
+    
+    fetchCabins();
+  }, []);
+  
+  useEffect(() => {
+    const checkAvailability = async () => {
+      if (!startDate || nights < 1) return;
+      
+      try {
+        setLoading(true);
+        const response = await axios.get(`http://localhost:3001/api/cabins/availability`, {
+          params: {
+            startDate,
+            nights
+          }
+        });
+        setAvailableCabins(response.data);
+        setLoading(false);
+      } catch (err) {
+        setError('Error al verificar disponibilidad');
+        setLoading(false);
+        console.error(err);
+      }
+    };
+    
+    checkAvailability();
+  }, [startDate, nights]);
+  
+  const handleReserve = (cabinId) => {
+    navigate('/reservar', { 
+      state: { 
+        cabinId,
+        startDate,
+        nights
+      } 
+    });
+  };
+  
+  const isCabinAvailable = (cabinId) => {
+    return availableCabins.some(cabin => cabin.id === cabinId);
+  };
+  
+  if (loading && cabins.length === 0) {
+    return <div>Cargando cabañas...</div>;
+  }
+  
+  if (error) {
+    return <div>{error}</div>;
+  }
+  
+  return (
+    <AccordionContainer>
+      <DateSelector>
+        <DateInput 
+          type="date" 
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          min={new Date().toISOString().split('T')[0]}
+        />
+        <NightsInput 
+          type="number" 
+          value={nights}
+          onChange={(e) => setNights(Math.max(1, parseInt(e.target.value) || 1))}
+          min="1"
+        />
+      </DateSelector>
+      
+      <CardsContainer>
+        {cabins.map((cabin) => (
+          <Card 
+            key={cabin.id} 
+            isAvailable={isCabinAvailable(cabin.id)}
+          >
+            <CardImage src={cabin.imageUrl || '/placeholder-cabin.jpg'} alt={cabin.name} />
+            <CardContent>
+              <CardTitle>{cabin.name}</CardTitle>
+              <CardDescription>{cabin.description}</CardDescription>
+              <CardPrice>${cabin.price} por noche</CardPrice>
+              <ReserveButton 
+                onClick={() => handleReserve(cabin.id)}
+                disabled={!isCabinAvailable(cabin.id)}
+              >
+                {isCabinAvailable(cabin.id) ? 'Reservar' : 'No disponible'}
+              </ReserveButton>
+            </CardContent>
+          </Card>
+        ))}
+      </CardsContainer>
+    </AccordionContainer>
+  );
+};
+
+export default CabinAccordion; 

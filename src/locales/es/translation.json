@@ -1,0 +1,38 @@
+{
+  "auth": {
+    "login": "Iniciar Sesión",
+    "register": "Registrarse",
+    "email": "Correo Electrónico",
+    "emailPlaceholder": "Ingresa tu correo electrónico",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Ingresa tu contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "confirmPasswordPlaceholder": "Confirma tu contraseña",
+    "firstName": "Nombre",
+    "firstNamePlaceholder": "Ingresa tu nombre",
+    "lastName": "Apellido",
+    "lastNamePlaceholder": "Ingresa tu apellido",
+    "phone": "Teléfono",
+    "phonePlaceholder": "Ingresa tu número de teléfono",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "noAccount": "¿No tienes una cuenta?",
+    "haveAccount": "¿Ya tienes una cuenta?",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña",
+    "recovery": {
+      "title": "Recuperación de Contraseña",
+      "description": "Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.",
+      "sendLink": "Enviar Enlace de Recuperación",
+      "backToLogin": "Volver al Inicio de Sesión"
+    }
+  },
+  "error": {
+    "email": "Por favor ingresa un correo electrónico válido",
+    "password": "La contraseña es requerida",
+    "passwordLength": "La contraseña debe tener al menos 8 caracteres",
+    "passwordMatch": "Las contraseñas no coinciden",
+    "firstName": "El nombre es requerido",
+    "lastName": "El apellido es requerido",
+    "phone": "Por favor ingresa un número de teléfono válido"
+  }
+} 
