@@ -187,17 +187,29 @@
   top: var(--header-height);
 }
 
-/* Blur effect when menu is open */
-.show-menu::before {
-  content: '';
+/* Overlay */
+.overlay {
+  display: none;
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(5px);
-  z-index: -1;
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px); /* Para Safari */
+  z-index: calc(var(--z-fixed) - 1);
+}
+
+.show-menu + .overlay {
+  display: block;
+}
+
+/* Asegurar que el contenido del menú sea clickeable */
+.nav-list,
+.nav-item,
+.nav-link {
+  pointer-events: auto;
 }
 
 /* Desktop Navigation */
@@ -220,8 +232,7 @@
     display: none;
   }
 
-  /* Remove blur effect on desktop */
-  .show-menu::before {
-    display: none;
+  .overlay {
+    display: none !important;
   }
 } 

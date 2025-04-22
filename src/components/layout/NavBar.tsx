@@ -21,9 +21,13 @@ const NavBar: React.FC = () => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
+      
+      // Cerrar menú de usuario si se hace clic fuera
       if (userMenuRef.current && !userMenuRef.current.contains(target)) {
         setShowUserMenu(false);
       }
+      
+      // Cerrar menú de navegación si se hace clic fuera
       if (menuRef.current && !menuRef.current.contains(target) && 
           !target.closest('.nav-toggle')) {
         setIsMenuOpen(false);
@@ -124,7 +128,7 @@ const NavBar: React.FC = () => {
           </button>
 
           <button className="language-toggle" onClick={toggleLanguage}>
-            {language === 'es' ? 'EN' : 'ES'}
+            {language === 'en' ? 'EN' : 'ES'}
           </button>
 
           <div className="user-menu" ref={userMenuRef}>
@@ -141,6 +145,8 @@ const NavBar: React.FC = () => {
           </div>
         </div>
       </nav>
+
+      <div className="overlay" onClick={() => setIsMenuOpen(false)} />
 
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
     </header>
