@@ -1,30 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
-import { useLanguage } from '../../context/LanguageContext';
-import { translations } from '../../i18n/config';
+import { useI18n } from '../../context/I18nContext';
 import AuthModal from '../auth/AuthModal';
 import './NavBar.css';
 
-const NavBar = () => {
+const NavBar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { theme, toggleTheme } = useTheme();
-  const { language, toggleLanguage } = useLanguage();
-  const userMenuRef = useRef(null);
-  const menuRef = useRef(null);
-
-  const tTranslation = translations[language];
+  const { t, currentLanguage, changeLanguage } = useI18n();
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (userMenuRef.current && !userMenuRef.current.contains(target)) {
         setShowUserMenu(false);
       }
-      if (menuRef.current && !menuRef.current.contains(event.target) && 
-          !event.target.closest('.nav-toggle')) {
+      if (menuRef.current && !menuRef.current.contains(target) && 
+          !target.closest('.nav-toggle')) {
         setIsMenuOpen(false);
       }
     };
@@ -75,7 +73,7 @@ const NavBar = () => {
                   alert('Página en construcción');
                 }}
               >
-                {tTranslation.cabins}
+                {t('navbar.cabins')}
               </button>
             </li>
             <li className="nav-item">
@@ -87,7 +85,7 @@ const NavBar = () => {
                   alert('Página en construcción');
                 }}
               >
-                {tTranslation.reserve}
+                {t('navbar.book')}
               </button>
             </li>
             <li className="nav-item">
@@ -95,7 +93,7 @@ const NavBar = () => {
                 className="nav-link" 
                 onClick={scrollToContact}
               >
-                {tTranslation.contact}
+                {t('navbar.contact')}
               </button>
             </li>
           </ul>
@@ -126,15 +124,14 @@ const NavBar = () => {
             )}
           </button>
 
-          <button className="language-toggle" onClick={toggleLanguage}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="2" y1="12" x2="22" y2="12"></line>
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-            </svg>
+          <button 
+            className="language-toggle" 
+            onClick={() => changeLanguage(currentLanguage === 'es' ? 'en' : 'es')}
+          >
+            {currentLanguage === 'es' ? 'EN' : 'ES'}
           </button>
 
-          <div className="user-menu">
+          <div className="user-menu" ref={userMenuRef}>
             <button className="user-button" onClick={toggleAuthForm}>
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -154,4 +151,4 @@ const NavBar = () => {
   );
 };
 
-export default NavBar;
+export default NavBar; 

@@ -1,35 +1,45 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
 const FooterContainer = styled.footer`
-  background-color: #333;
-  color: white;
-  padding: 50px 0 20px;
+  background-color: #2c3e50 !important;
+  color: #ffffff;
+  padding: 2rem 0;
+  margin-top: auto;
+  position: relative;
 `;
 
 const FooterContent = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 30px;
-  
-  @media (max-width: 992px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  @media (max-width: 576px) {
-    grid-template-columns: 1fr;
+  padding: 0 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
   }
 `;
 
 const FooterSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
   h3 {
-    font-size: 1.2rem;
-    margin-bottom: 20px;
+    color: #ffffff;
+    font-size: 1.25rem;
     position: relative;
+    margin: 0;
     
     &:after {
       content: '';
@@ -38,59 +48,57 @@ const FooterSection = styled.div`
       bottom: -8px;
       width: 40px;
       height: 2px;
-      background-color: #4CAF50;
+      background-color: #3498db;
+    }
+
+    @media (max-width: 768px) {
+      &:after {
+        left: 50%;
+        transform: translateX(-50%);
+      }
     }
   }
-`;
 
-const FooterLinks = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  
-  li {
-    margin-bottom: 10px;
+  p {
+    color: #ecf0f1;
+    line-height: 1.6;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
-  
+
   a {
-    color: #ccc;
+    color: #ecf0f1;
     text-decoration: none;
     transition: color 0.3s ease;
-    
+
     &:hover {
-      color: #4CAF50;
+      color: #3498db;
     }
   }
 `;
 
 const ContactInfo = styled.div`
-  p {
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    
-    svg {
-      margin-right: 10px;
-      color: #4CAF50;
-    }
-  }
-  
-  a {
-    color: #ccc;
-    text-decoration: none;
-    transition: color 0.3s ease;
-    
-    &:hover {
-      color: #4CAF50;
-    }
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
   }
 `;
 
 const SocialLinks = styled.div`
   display: flex;
-  gap: 15px;
-  margin-top: 20px;
-  
+  gap: 1rem;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    justify-content: center;
+  }
+
   a {
     display: flex;
     align-items: center;
@@ -101,46 +109,76 @@ const SocialLinks = styled.div`
     border-radius: 50%;
     color: white;
     transition: all 0.3s ease;
-    
+
     &:hover {
-      background-color: #4CAF50;
+      background-color: #3498db;
       transform: translateY(-3px);
     }
   }
 `;
 
-const Copyright = styled.div`
+const FooterBottom = styled.div`
   text-align: center;
-  margin-top: 50px;
-  padding-top: 20px;
+  padding-top: 1rem;
+  margin-top: 1rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 0.9rem;
-  color: #ccc;
+  color: #ecf0f1;
+`;
+
+const GoToTopButton = styled.button`
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background-color: #3498db;
+  color: white;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  opacity: ${props => props.visible ? '1' : '0'};
+  visibility: ${props => props.visible ? 'visible' : 'hidden'};
+  transition: all 0.3s ease;
+  z-index: 1000;
+
+  &:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+  }
 `;
 
 const Footer = () => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  const toggleVisibility = () => {
+    if (window.pageYOffset > 300) {
+      setIsVisible(true);
+    } else {
+      setIsVisible(false);
+    }
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
+  useEffect(() => {
+    window.addEventListener('scroll', toggleVisibility);
+    return () => {
+      window.removeEventListener('scroll', toggleVisibility);
+    };
+  }, []);
+
   return (
     <FooterContainer>
       <FooterContent>
-        <FooterSection>
-          <h3>Sobre Nosotros</h3>
-          <p>
-            San José del Pacífico es un paraíso en las montañas de Oaxaca, 
-            donde podrás disfrutar de la naturaleza y la tranquilidad en nuestras 
-            hermosas cabañas.
-          </p>
-        </FooterSection>
-        
-        <FooterSection>
-          <h3>Enlaces Rápidos</h3>
-          <FooterLinks>
-            <li><Link to="/">Inicio</Link></li>
-            <li><Link to="/cabanas">Cabañas</Link></li>
-            <li><Link to="/reservar">Reservar</Link></li>
-            <li><Link to="/contacto">Contacto</Link></li>
-          </FooterLinks>
-        </FooterSection>
-        
         <FooterSection>
           <h3>Contacto</h3>
           <ContactInfo>
@@ -148,7 +186,7 @@ const Footer = () => {
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                 <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
               </svg>
-              San José del Pacífico, Oaxaca, México
+              San José del Pacífico, Oaxaca
             </p>
             <p>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -160,30 +198,29 @@ const Footer = () => {
             </p>
           </ContactInfo>
         </FooterSection>
-        
-        <FooterSection>
-          <h3>Síguenos</h3>
-          <p>Mantente al día con nuestras novedades y ofertas especiales.</p>
-          <SocialLinks>
-            <a href="https://www.facebook.com/cabanaselmogotedonaIsabelsanjosedelpacifico/" target="_blank" rel="noopener noreferrer">
-              <i className="fab fa-facebook-f"></i>
-            </a>
-            <a href="https://www.instagram.com/cabanaselmogotedonaisabel/" target="_blank" rel="noopener noreferrer">
-              <i className="fab fa-instagram"></i>
-            </a>
-            <a href="https://www.tiktok.com/@elmogotedonaisabel" target="_blank" rel="noopener noreferrer">
-              <i className="fab fa-tiktok"></i>
-            </a>
-            <a href="https://wa.me/529511117327" target="_blank" rel="noopener noreferrer">
-              <i className="fab fa-whatsapp"></i>
-            </a>
-          </SocialLinks>
-        </FooterSection>
+        <SocialLinks>
+          <a href="https://www.facebook.com/cabanaselmogotedonaIsabelsanjosedelpacifico/" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+            <i className="fab fa-facebook-f"></i>
+          </a>
+          <a href="https://www.instagram.com/cabanaselmogotedonaisabel/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <i className="fab fa-instagram"></i>
+          </a>
+          <a href="https://www.tiktok.com/@elmogotedonaisabel" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+            <i className="fab fa-tiktok"></i>
+          </a>
+          <a href="https://wa.me/529511117327" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+            <i className="fab fa-whatsapp"></i>
+          </a>
+        </SocialLinks>
       </FooterContent>
-      
-      <Copyright>
+
+      <FooterBottom>
         <p>&copy; {new Date().getFullYear()} Cabañas El Mogote Doña Isabel. Todos los derechos reservados.</p>
-      </Copyright>
+      </FooterBottom>
+
+      <GoToTopButton visible={isVisible} onClick={scrollToTop} aria-label="Ir arriba">
+        <i className="fas fa-arrow-up"></i>
+      </GoToTopButton>
     </FooterContainer>
   );
 };

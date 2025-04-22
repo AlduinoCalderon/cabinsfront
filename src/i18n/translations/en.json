@@ -1,0 +1,74 @@
+{
+  "navbar": {
+    "cabins": "Cabins",
+    "book": "Book",
+    "contact": "Contact",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout"
+  },
+  "auth": {
+    "loginTitle": "Login",
+    "registerTitle": "Create Account",
+    "recoveryTitle": "Recover Password",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Confirm your password",
+    "firstName": "First Name",
+    "firstNamePlaceholder": "Enter your first name",
+    "lastName": "Last Name",
+    "lastNamePlaceholder": "Enter your last name",
+    "phone": "Phone",
+    "phonePlaceholder": "Enter your phone number",
+    "login": "Login",
+    "register": "Register",
+    "forgotPassword": "Forgot your password?",
+    "backToLogin": "Back to login",
+    "sendRecoveryLink": "Send recovery link",
+    "recoveryInstructions": "Enter your email and we'll send you a link to recover your password",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
+  },
+  "error": {
+    "email": "Please enter a valid email",
+    "password": "Password is required",
+    "passwordLength": "Password must be at least 8 characters",
+    "passwordMatch": "Passwords do not match",
+    "firstName": "First name is required",
+    "lastName": "Last name is required",
+    "phone": "Please enter a valid phone number"
+  },
+  "home": {
+    "title": "Welcome to Our Cabins",
+    "subtitle": "Enjoy a unique experience in nature",
+    "features": {
+      "title": "Our Features",
+      "comfort": {
+        "title": "Comfort",
+        "description": "Cabins equipped with all modern amenities"
+      },
+      "nature": {
+        "title": "Nature",
+        "description": "Surrounded by impressive natural landscapes"
+      },
+      "privacy": {
+        "title": "Privacy",
+        "description": "Private spaces for your tranquility"
+      }
+    },
+    "gallery": {
+      "title": "Gallery"
+    },
+    "contact": {
+      "title": "Contact",
+      "address": "Address",
+      "phone": "Phone",
+      "email": "Email"
+    }
+  }
+} 

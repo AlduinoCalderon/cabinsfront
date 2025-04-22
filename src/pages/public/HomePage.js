@@ -1,19 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
-import CabinAccordion from '../../components/user/CabinAccordion';
+import { Link, useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
+import { translations } from '../../i18n/config';
 import NavBar from '../../components/layout/NavBar';
-import images from '../../assets/images';
-import { useTranslation } from 'react-i18next';
+import mainImage from '../../assets/images/main.jpg';
+import senderismoImage from '../../assets/images/senderismo.jpg';
+import extremosImage from '../../assets/images/extremos.jpg';
+import cabana2 from '../../assets/images/cabanaelmogotedonaisabel2.jpg';
+import cabana3 from '../../assets/images/cabanaelmogotedonaisabel3.jpg';
+import cabana5 from '../../assets/images/cabanaelmogotedonaisabel5.jpg';
+import cabana8 from '../../assets/images/cabanaelmogotedonaisabel8.jpg';
+import cabana9 from '../../assets/images/cabanaelmogotedonaisabel9.jpg';
+import cabana11 from '../../assets/images/cabanaelmogotedonaisabel11.jpg';
+import cabana14 from '../../assets/images/cabanaelmogotedonaisabel14.jpg';
+import cabana16 from '../../assets/images/cabanaelmogotedonaisabel16.jpg';
+import cabana20 from '../../assets/images/cabanaelmogotedonaisabel20.jpg';
+import cabana23 from '../../assets/images/cabanaelmogotedonaisabel23.jpg';
+import cabana26 from '../../assets/images/cabanaelmogotedonaisabel26.jpg';
 
 const HomeContainer = styled.div`
   min-height: 100vh;
-  background-color: var(--bg-color);
-  transition: var(--transition);
+  background-color: ${props => props.theme.bgColor};
+  transition: all 0.3s ease;
 `;
 
 const HeroSection = styled.div`
   height: 80vh;
+  background-image: url(${mainImage});
   background-size: cover;
   background-position: center;
   display: flex;
@@ -63,19 +78,47 @@ const HeroSubtitle = styled.h2`
   }
 `;
 
-const HeroButton = styled(Link)`
-  display: inline-block;
-  padding: 12px 30px;
-  background-color: var(--second-color);
+const HeroButton = styled.button`
+  background-color: ${props => props.theme.colors?.primary || '#3498db'};
   color: white;
-  text-decoration: none;
-  border-radius: 5px;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 0.5rem;
   font-size: 1.2rem;
-  font-weight: bold;
-  transition: var(--transition);
-  
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 2rem auto 0;
+  display: block;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+
+  &:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, ${props => props.theme.colors?.primary || '#3498db'}, ${props => props.theme.colors?.secondary || '#2980b9'});
+    z-index: -1;
+    transition: opacity 0.3s ease;
+    opacity: 0;
+  }
+
   &:hover {
-    background-color: var(--first-color);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+
+    &:before {
+      opacity: 1;
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
@@ -83,52 +126,11 @@ const SectionTitle = styled.h2`
   text-align: center;
   font-size: 2.5rem;
   margin-bottom: 40px;
-  color: var(--text-color);
-  transition: var(--transition);
+  color: ${props => props.theme.textColor};
+  transition: all 0.3s ease;
   
   @media (max-width: 768px) {
     font-size: 2rem;
-  }
-`;
-
-const AboutSection = styled.section`
-  padding: 80px 20px;
-  background-color: var(--section-bg);
-  transition: var(--transition);
-`;
-
-const AboutContent = styled.div`
-  display: flex;
-  max-width: 1200px;
-  margin: 0 auto;
-  gap: 40px;
-  
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
-`;
-
-const AboutImage = styled.img`
-  width: 50%;
-  border-radius: 10px;
-  object-fit: cover;
-  
-  @media (max-width: 768px) {
-    width: 100%;
-  }
-`;
-
-const AboutText = styled.div`
-  width: 50%;
-  
-  p {
-    margin-bottom: 20px;
-    line-height: 1.6;
-    color: var(--about-text-color);
-  }
-  
-  @media (max-width: 768px) {
-    width: 100%;
   }
 `;
 
@@ -250,7 +252,7 @@ const ServiceTitle = styled.h3`
   text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
   transition: all 0.3s ease;
   width: 100%;
-  color: var(--service-title-color);
+  color: white;
   
   @media (max-width: 768px) {
     font-size: 1.2rem;
@@ -271,7 +273,7 @@ const ServiceDescription = styled.p`
   overflow: hidden;
   max-width: 200px;
   visibility: hidden;
-  color: var(--service-desc-color);
+  color: white;
   
   ${ServiceCard}:hover & {
     @keyframes fadeIn {
@@ -303,16 +305,16 @@ const ServiceDescription = styled.p`
 
 const GallerySection = styled.section`
   padding: 80px 20px;
-  background-color: var(--gallery-bg);
-  transition: var(--transition);
+  background-color: ${props => props.theme.sectionBg};
+  transition: all 0.3s ease;
 `;
 
 const GalleryTitle = styled.h2`
   text-align: center;
   font-size: 2.5rem;
   margin-bottom: 40px;
-  color: var(--text-color);
-  transition: var(--transition);
+  color: ${props => props.theme.textColor};
+  transition: all 0.3s ease;
   
   @media (max-width: 768px) {
     font-size: 2rem;
@@ -339,73 +341,111 @@ const GalleryImage = styled.img`
   }
 `;
 
+const AboutSection = styled.section`
+  padding: 4rem 2rem;
+  background-color: ${props => props.theme.colors?.background};
+  color: ${props => props.theme.colors?.text};
+  transition: background-color 0.3s ease, color 0.3s ease;
+`;
+
+const AboutContent = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const AboutImage = styled.img`
+  width: 100%;
+  height: auto;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+`;
+
+const AboutText = styled.div`
+  p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+    color: ${props => props.theme.colors?.text};
+  }
+`;
+
 const HomePage = () => {
-  const [expandedCard, setExpandedCard] = React.useState(null);
-  const { t } = useTranslation();
+  const { theme } = useTheme();
+  const { language } = useLanguage();
+  const t = translations[language];
+  const [expandedCard, setExpandedCard] = useState(null);
+  const navigate = useNavigate();
 
-  // Array de imágenes para la galería usando imágenes diferentes a las usadas en otras secciones
-  const galleryImages = [
-    { src: images.cabanas.cabana20, alt: 'Vista exterior de la cabaña' },
-    { src: images.cabanas.cabana23, alt: 'Ambiente natural y paisaje' },
-    { src: images.cabanas.cabana26, alt: 'Interior acogedor' },
-    { src: images.cabanas.cabana5, alt: 'Área de descanso' },
-    { src: images.cabanas.cabana9, alt: 'Vistas a la montaña' },
-    { src: images.cabanas.cabana16, alt: 'Atardecer en las montañas' }
-  ];
-
-  // Datos de servicios
   const services = [
     {
-      title: t('home.services.cabins.title'),
-      description: t('home.services.cabins.desc'),
-      image: images.cabanas.cabana2
+      title: t.home.services.cabins.title,
+      description: t.home.services.cabins.desc,
+      image: cabana2
     },
     {
-      title: t('home.services.air.title'),
-      description: t('home.services.air.desc'),
-      image: images.cabanas.cabana11
+      title: t.home.services.hiking.title,
+      description: t.home.services.hiking.desc,
+      image: senderismoImage
     },
     {
-      title: t('home.services.hiking.title'),
-      description: t('home.services.hiking.desc'),
-      image: images.actividades.senderismo
+      title: t.home.services.extreme.title,
+      description: t.home.services.extreme.desc,
+      image: extremosImage
     },
     {
-      title: t('home.services.sunset.title'),
-      description: t('home.services.sunset.desc'),
-      image: images.cabanas.cabana14
+      title: t.home.services.air.title,
+      description: t.home.services.air.desc,
+      image: cabana11
     },
     {
-      title: t('home.services.extreme.title'),
-      description: t('home.services.extreme.desc'),
-      image: images.actividades.extremos
+      title: t.home.services.sunset.title,
+      description: t.home.services.sunset.desc,
+      image: cabana14
     }
   ];
 
+  const galleryImages = [
+    { src: cabana20, alt: t.gallery.images[0] },
+    { src: cabana23, alt: t.gallery.images[1] },
+    { src: cabana26, alt: t.gallery.images[2] },
+    { src: cabana5, alt: t.gallery.images[3] },
+    { src: cabana9, alt: t.gallery.images[4] },
+    { src: cabana16, alt: t.gallery.images[5] }
+  ];
+
   return (
-    <HomeContainer>
+    <HomeContainer theme={theme}>
       <NavBar />
-      <HeroSection style={{ backgroundImage: `url(${images.main})` }}>
+      <HeroSection>
         <HeroContent>
-          <HeroTitle>{t('home.hero.title')}</HeroTitle>
-          <HeroSubtitle>{t('home.hero.subtitle')}</HeroSubtitle>
-          <HeroButton to="/cabanas">{t('home.hero.cta')}</HeroButton>
+          <HeroTitle>{t.home.hero.title}</HeroTitle>
+          <HeroSubtitle>{t.home.hero.subtitle}</HeroSubtitle>
+          <HeroButton onClick={() => navigate('/cabins')}>
+            {t.home.hero.button}
+          </HeroButton>
         </HeroContent>
       </HeroSection>
 
       <AboutSection>
-        <SectionTitle>{t('home.about.title')}</SectionTitle>
+        <SectionTitle>{t.home.about.title}</SectionTitle>
         <AboutContent>
-          <AboutImage src={images.cabanas.cabana8} alt="El Mogote Doña Isabel" />
+          <AboutImage src={cabana2} alt="El Mogote Doña Isabel" />
           <AboutText>
-            <p>{t('home.about.text1')}</p>
-            <p>{t('home.about.text2')}</p>
+            <p>{t.home.about.text1}</p>
+            <p>{t.home.about.text2}</p>
           </AboutText>
         </AboutContent>
       </AboutSection>
 
       <ServicesSection>
-        <SectionTitle>{t('home.services.title')}</SectionTitle>
+        <SectionTitle theme={theme}>{t.home.services.title}</SectionTitle>
         <ServicesContainer>
           {services.map((service, index) => (
             <ServiceCard 
@@ -423,8 +463,8 @@ const HomePage = () => {
         </ServicesContainer>
       </ServicesSection>
 
-      <GallerySection>
-        <GalleryTitle>{t('gallery.title')}</GalleryTitle>
+      <GallerySection theme={theme}>
+        <GalleryTitle theme={theme}>{t.gallery.title}</GalleryTitle>
         <GalleryGrid>
           {galleryImages.map((image, index) => (
             <GalleryImage key={index} src={image.src} alt={image.alt} />

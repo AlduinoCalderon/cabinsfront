@@ -1,11 +1,108 @@
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import styled from 'styled-components';
+import { useTheme } from '../../context/ThemeContext';
+import { useLanguage } from '../../context/LanguageContext';
+import { translations } from '../../i18n/config';
+import { useAuth } from '../../context/AuthContext';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import './AuthModal.css';
 
-const RegisterForm = ({ onSubmit, onSwitchToLogin }) => {
-  const { t } = useTranslation();
+const FormContainer = styled.div`
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: ${props => props.theme.cardBg};
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+`;
+
+const FormTitle = styled.h2`
+  text-align: center;
+  color: ${props => props.theme.titleColor};
+  margin-bottom: 2rem;
+  font-size: 1.8rem;
+`;
+
+const FormGroup = styled.div`
+  margin-bottom: 1.5rem;
+`;
+
+const Label = styled.label`
+  display: block;
+  margin-bottom: 0.5rem;
+  color: ${props => props.theme.textColor};
+  font-weight: 500;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid ${props => props.theme.borderColor};
+  border-radius: 5px;
+  background-color: ${props => props.theme.inputBg};
+  color: ${props => props.theme.textColor};
+  transition: all 0.3s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primaryColor};
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+  }
+`;
+
+const SubmitButton = styled.button`
+  width: 100%;
+  padding: 0.75rem;
+  background-color: ${props => props.theme.primaryColor};
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: ${props => props.theme.secondaryColor};
+  }
+
+  &:disabled {
+    background-color: ${props => props.theme.disabledColor};
+    cursor: not-allowed;
+  }
+`;
+
+const ErrorMessage = styled.p`
+  color: ${props => props.theme.errorColor};
+  margin-top: 1rem;
+  text-align: center;
+`;
+
+const SwitchForm = styled.p`
+  text-align: center;
+  margin-top: 1rem;
+  color: ${props => props.theme.textColor};
+  
+  a {
+    color: ${props => props.theme.primaryColor};
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: ${props => props.theme.secondaryColor};
+    }
+  }
+`;
+
+const RegisterForm = ({ onRegister, onSwitchToLogin }) => {
+  const { theme } = useTheme();
+  const { language } = useLanguage();
+  const t = translations[language];
+  const { register } = useAuth();
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -13,10 +110,38 @@ const RegisterForm = ({ onSubmit, onSwitchToLogin }) => {
     lastName: '',
     phone: ''
   });
-
-  const [errors, setErrors] = useState({});
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError(t.register.passwordsDontMatch);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await register(formData.name, formData.email, formData.password);
+    } catch (err) {
+      setError(err.message || t.register.error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -36,162 +161,157 @@ const RegisterForm = ({ onSubmit, onSwitchToLogin }) => {
     const newErrors = {};
 
     if (!formData.email || !validateEmail(formData.email)) {
-      newErrors.email = t('error.email');
+      newErrors.email = t.error.email;
     }
 
     if (!formData.password) {
-      newErrors.password = t('error.password');
+      newErrors.password = t.error.password;
     } else if (!validatePassword(formData.password)) {
-      newErrors.password = t('error.passwordLength');
+      newErrors.password = t.error.passwordLength;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = t('error.passwordMatch');
+      newErrors.confirmPassword = t.error.passwordMatch;
     }
 
     if (!formData.firstName.trim()) {
-      newErrors.firstName = t('error.firstName');
+      newErrors.firstName = t.error.firstName;
     }
 
     if (!formData.lastName.trim()) {
-      newErrors.lastName = t('error.lastName');
+      newErrors.lastName = t.error.lastName;
     }
 
     if (!formData.phone || !validatePhone(formData.phone)) {
-      newErrors.phone = t('error.phone');
+      newErrors.phone = t.error.phone;
     }
 
-    setErrors(newErrors);
+    setError(Object.keys(newErrors).length > 0 ? Object.values(newErrors).join('\n') : '');
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validateForm()) {
-      onSubmit(formData);
-    }
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
-  };
-
   return (
-    <form onSubmit={handleSubmit} className="auth-form">
-      <div className="form-group">
-        <input
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          placeholder={t('auth.emailPlaceholder')}
-          className={errors.email ? 'error' : ''}
-        />
-        {errors.email && <span className="error-message">{errors.email}</span>}
-      </div>
-
-      <div className="form-group">
-        <div className="password-input-container">
-          <input
-            type={showPassword ? 'text' : 'password'}
-            name="password"
-            value={formData.password}
+    <FormContainer theme={theme}>
+      <FormTitle theme={theme}>{t.register.title}</FormTitle>
+      <form onSubmit={handleSubmit}>
+        <FormGroup>
+          <Label theme={theme}>{t.register.name}</Label>
+          <Input
+            type="text"
+            name="name"
+            value={formData.name}
             onChange={handleChange}
-            placeholder={t('auth.passwordPlaceholder')}
-            className={errors.password ? 'error' : ''}
+            required
+            theme={theme}
           />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="password-toggle"
-            aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
-          >
-            {showPassword ? <FaEyeSlash /> : <FaEye />}
-          </button>
-        </div>
-        {errors.password && <span className="error-message">{errors.password}</span>}
-      </div>
-
-      <div className="form-group">
-        <div className="password-input-container">
-          <input
-            type={showConfirmPassword ? 'text' : 'password'}
-            name="confirmPassword"
-            value={formData.confirmPassword}
+        </FormGroup>
+        <FormGroup>
+          <Label theme={theme}>{t.register.email}</Label>
+          <Input
+            type="email"
+            name="email"
+            value={formData.email}
             onChange={handleChange}
-            placeholder={t('auth.confirmPasswordPlaceholder')}
-            className={errors.confirmPassword ? 'error' : ''}
+            required
+            theme={theme}
           />
-          <button
-            type="button"
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            className="password-toggle"
-            aria-label={showConfirmPassword ? t('auth.hidePassword') : t('auth.showPassword')}
-          >
-            {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-          </button>
-        </div>
-        {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
-      </div>
-
-      <div className="form-group">
-        <input
-          type="text"
-          name="firstName"
-          value={formData.firstName}
-          onChange={handleChange}
-          placeholder={t('auth.firstNamePlaceholder')}
-          className={errors.firstName ? 'error' : ''}
-        />
-        {errors.firstName && <span className="error-message">{errors.firstName}</span>}
-      </div>
-
-      <div className="form-group">
-        <input
-          type="text"
-          name="lastName"
-          value={formData.lastName}
-          onChange={handleChange}
-          placeholder={t('auth.lastNamePlaceholder')}
-          className={errors.lastName ? 'error' : ''}
-        />
-        {errors.lastName && <span className="error-message">{errors.lastName}</span>}
-      </div>
-
-      <div className="form-group">
-        <input
-          type="tel"
-          name="phone"
-          value={formData.phone}
-          onChange={handleChange}
-          placeholder={t('auth.phonePlaceholder')}
-          className={errors.phone ? 'error' : ''}
-        />
-        {errors.phone && <span className="error-message">{errors.phone}</span>}
-      </div>
-
-      <button type="submit" className="auth-button">
-        {t('auth.register')}
-      </button>
-
-      <p className="auth-switch">
-        {t('auth.haveAccount')}{' '}
-        <button type="button" onClick={onSwitchToLogin} className="auth-switch-button">
-          {t('auth.login')}
-        </button>
-      </p>
-    </form>
+        </FormGroup>
+        <FormGroup>
+          <Label theme={theme}>{t.register.password}</Label>
+          <div className="password-input-container">
+            <Input
+              type={showPassword ? 'text' : 'password'}
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              minLength="6"
+              theme={theme}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="password-toggle"
+              aria-label={showPassword ? t.auth.hidePassword : t.auth.showPassword}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
+          </div>
+        </FormGroup>
+        <FormGroup>
+          <Label theme={theme}>{t.register.confirmPassword}</Label>
+          <div className="password-input-container">
+            <Input
+              type={showConfirmPassword ? 'text' : 'password'}
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+              minLength="6"
+              theme={theme}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="password-toggle"
+              aria-label={showConfirmPassword ? t.auth.hidePassword : t.auth.showPassword}
+            >
+              {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
+          </div>
+        </FormGroup>
+        <FormGroup>
+          <Label theme={theme}>{t.register.firstName}</Label>
+          <Input
+            type="text"
+            name="firstName"
+            value={formData.firstName}
+            onChange={handleChange}
+            required
+            theme={theme}
+          />
+        </FormGroup>
+        <FormGroup>
+          <Label theme={theme}>{t.register.lastName}</Label>
+          <Input
+            type="text"
+            name="lastName"
+            value={formData.lastName}
+            onChange={handleChange}
+            required
+            theme={theme}
+          />
+        </FormGroup>
+        <FormGroup>
+          <Label theme={theme}>{t.register.phone}</Label>
+          <Input
+            type="tel"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            required
+            theme={theme}
+          />
+        </FormGroup>
+        {error && <ErrorMessage theme={theme}>{error}</ErrorMessage>}
+        <SubmitButton
+          type="submit"
+          disabled={loading}
+          theme={theme}
+        >
+          {loading ? t.register.loading : t.register.submit}
+        </SubmitButton>
+        <SwitchForm theme={theme}>
+          {t.register.haveAccount}{' '}
+          <a href="#" onClick={(e) => {
+            e.preventDefault();
+            onSwitchToLogin();
+          }}>
+            {t.register.login}
+          </a>
+        </SwitchForm>
+      </form>
+    </FormContainer>
   );
 };
 

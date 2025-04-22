@@ -1,0 +1,74 @@
+{
+  "navbar": {
+    "cabins": "Cabañas",
+    "book": "Reservar",
+    "contact": "Contacto",
+    "login": "Iniciar Sesión",
+    "register": "Registrarse",
+    "logout": "Cerrar Sesión"
+  },
+  "auth": {
+    "loginTitle": "Iniciar Sesión",
+    "registerTitle": "Crear Cuenta",
+    "recoveryTitle": "Recuperar Contraseña",
+    "email": "Correo Electrónico",
+    "emailPlaceholder": "Ingresa tu correo electrónico",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Ingresa tu contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "confirmPasswordPlaceholder": "Confirma tu contraseña",
+    "firstName": "Nombre",
+    "firstNamePlaceholder": "Ingresa tu nombre",
+    "lastName": "Apellido",
+    "lastNamePlaceholder": "Ingresa tu apellido",
+    "phone": "Teléfono",
+    "phonePlaceholder": "Ingresa tu teléfono",
+    "login": "Iniciar Sesión",
+    "register": "Registrarse",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "backToLogin": "Volver al inicio de sesión",
+    "sendRecoveryLink": "Enviar enlace de recuperación",
+    "recoveryInstructions": "Ingresa tu correo electrónico y te enviaremos un enlace para recuperar tu contraseña",
+    "noAccount": "¿No tienes una cuenta?",
+    "haveAccount": "¿Ya tienes una cuenta?",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña"
+  },
+  "error": {
+    "email": "Por favor ingresa un correo electrónico válido",
+    "password": "La contraseña es requerida",
+    "passwordLength": "La contraseña debe tener al menos 8 caracteres",
+    "passwordMatch": "Las contraseñas no coinciden",
+    "firstName": "El nombre es requerido",
+    "lastName": "El apellido es requerido",
+    "phone": "Por favor ingresa un número de teléfono válido"
+  },
+  "home": {
+    "title": "Bienvenido a Nuestras Cabañas",
+    "subtitle": "Disfruta de una experiencia única en la naturaleza",
+    "features": {
+      "title": "Nuestras Características",
+      "comfort": {
+        "title": "Comodidad",
+        "description": "Cabañas equipadas con todas las comodidades modernas"
+      },
+      "nature": {
+        "title": "Naturaleza",
+        "description": "Rodeado de paisajes naturales impresionantes"
+      },
+      "privacy": {
+        "title": "Privacidad",
+        "description": "Espacios privados para tu tranquilidad"
+      }
+    },
+    "gallery": {
+      "title": "Galería"
+    },
+    "contact": {
+      "title": "Contacto",
+      "address": "Dirección",
+      "phone": "Teléfono",
+      "email": "Correo Electrónico"
+    }
+  }
+} 

@@ -1,0 +1,44 @@
+:root {
+  /* Colores base */
+  --primary-color: #3498db;
+  --primary-color-light: rgba(52, 152, 219, 0.1);
+  --primary-color-dark: #2980b9;
+  --secondary-color: #2ecc71;
+  --secondary-color-dark: #27ae60;
+  --error-color: #e74c3c;
+  --success-color: #2ecc71;
+  --warning-color: #f1c40f;
+  --info-color: #3498db;
+
+  /* Tema claro */
+  --bg-color: #ffffff;
+  --text-color: #333333;
+  --border-color: #e0e0e0;
+  --input-bg: #f5f5f5;
+  --card-bg: #ffffff;
+  --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  /* Modal - Tema claro */
+  --modal-bg: #ffffff;
+  --modal-text: #333333;
+  --modal-border: #e0e0e0;
+  --modal-input-bg: #f5f5f5;
+  --button-text: #ffffff;
+}
+
+[data-theme="dark"] {
+  /* Tema oscuro */
+  --bg-color: #1a1a1a;
+  --text-color: #ffffff;
+  --border-color: #333333;
+  --input-bg: #2d2d2d;
+  --card-bg: #2d2d2d;
+  --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  
+  /* Modal - Tema oscuro */
+  --modal-bg: #2d2d2d;
+  --modal-text: #ffffff;
+  --modal-border: #404040;
+  --modal-input-bg: #1a1a1a;
+  --button-text: #ffffff;
+} 
