@@ -26,8 +26,6 @@ i18n
     }
   });
 
-export default i18n;
-
 export const translations = {
   es: {
     home: {
@@ -185,4 +183,6 @@ export const translations = {
     viewDetails: 'View Details',
     reserveNow: 'Reserve Now'
   }
-}; 
+};
+
+export default i18n; 

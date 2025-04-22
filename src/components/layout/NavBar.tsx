@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
-import { useI18n } from '../../context/I18nContext';
+import { useLanguage } from '../../context/LanguageContext';
+import { translations } from '../../i18n/translations';
 import AuthModal from '../auth/AuthModal';
 import './NavBar.css';
 
@@ -11,9 +12,11 @@ const NavBar: React.FC = () => {
   const [user, setUser] = useState(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { theme, toggleTheme } = useTheme();
-  const { t, currentLanguage, changeLanguage } = useI18n();
+  const { language, toggleLanguage } = useLanguage();
   const userMenuRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const t = translations[language];
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -73,7 +76,7 @@ const NavBar: React.FC = () => {
                   alert('Página en construcción');
                 }}
               >
-                {t('navbar.cabins')}
+                {t.cabins}
               </button>
             </li>
             <li className="nav-item">
@@ -85,7 +88,7 @@ const NavBar: React.FC = () => {
                   alert('Página en construcción');
                 }}
               >
-                {t('navbar.book')}
+                {t.reserve}
               </button>
             </li>
             <li className="nav-item">
@@ -93,14 +96,10 @@ const NavBar: React.FC = () => {
                 className="nav-link" 
                 onClick={scrollToContact}
               >
-                {t('navbar.contact')}
+                {t.contact}
               </button>
             </li>
           </ul>
-
-          <div className="nav-close" onClick={() => setIsMenuOpen(false)}>
-            <i className="ri-close-line"></i>
-          </div>
         </div>
 
         <div className="nav-actions">
@@ -124,11 +123,8 @@ const NavBar: React.FC = () => {
             )}
           </button>
 
-          <button 
-            className="language-toggle" 
-            onClick={() => changeLanguage(currentLanguage === 'es' ? 'en' : 'es')}
-          >
-            {currentLanguage === 'es' ? 'EN' : 'ES'}
+          <button className="language-toggle" onClick={toggleLanguage}>
+            {language === 'es' ? 'EN' : 'ES'}
           </button>
 
           <div className="user-menu" ref={userMenuRef}>
