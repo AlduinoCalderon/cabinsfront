@@ -32,7 +32,13 @@
     "noAccount": "¿No tienes una cuenta?",
     "haveAccount": "¿Ya tienes una cuenta?",
     "showPassword": "Mostrar contraseña",
-    "hidePassword": "Ocultar contraseña"
+    "hidePassword": "Ocultar contraseña",
+    "loading": "Cargando...",
+    "closeModal": "Cerrar modal",
+    "recoverySuccess": "Correo de recuperación enviado exitosamente",
+    "recoveryDescription": "Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña",
+    "recoveryButton": "Enviar enlace de recuperación",
+    "rememberPassword": "¿Recuerdas tu contraseña?"
   },
   "error": {
     "email": "Por favor ingresa un correo electrónico válido",
@@ -41,7 +47,11 @@
     "passwordMatch": "Las contraseñas no coinciden",
     "firstName": "El nombre es requerido",
     "lastName": "El apellido es requerido",
-    "phone": "Por favor ingresa un número de teléfono válido"
+    "phone": "Por favor ingresa un número de teléfono válido",
+    "emailRequired": "El correo electrónico es requerido",
+    "emailInvalid": "El correo electrónico no es válido",
+    "passwordRequired": "La contraseña es requerida",
+    "general": "Ocurrió un error. Por favor intenta de nuevo."
   },
   "home": {
     "title": "Bienvenido a Nuestras Cabañas",

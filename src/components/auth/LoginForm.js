@@ -1,45 +1,19 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../../context/ThemeContext';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import './AuthModal.css';
 
-const LoginForm = ({ onSwitchToRegister, onSwitchToRecovery }) => {
+const LoginForm = ({ onSubmit, onSwitchToRegister, onSwitchToRecovery }) => {
+  const { theme } = useTheme();
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
-
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.email || !validateEmail(formData.email)) {
-      newErrors.email = t('error.email');
-    }
-
-    if (!formData.password) {
-      newErrors.password = t('error.password');
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validateForm()) {
-      // Aquí iría la lógica de autenticación
-      console.log('Iniciando sesión con:', formData);
-    }
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -47,7 +21,6 @@ const LoginForm = ({ onSwitchToRegister, onSwitchToRecovery }) => {
       ...prev,
       [name]: value
     }));
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -56,27 +29,64 @@ const LoginForm = ({ onSwitchToRegister, onSwitchToRecovery }) => {
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (validateForm()) {
+      setLoading(true);
+      try {
+        await onSubmit(formData);
+      } catch (err) {
+        setErrors({
+          ...errors,
+          general: err.message || t('error.general')
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.email) {
+      newErrors.email = t('error.emailRequired');
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = t('error.emailInvalid');
+    }
+
+    if (!formData.password) {
+      newErrors.password = t('error.passwordRequired');
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="auth-form">
+    <form className="auth-form" onSubmit={handleSubmit}>
       <div className="form-group">
+        <label>{t('auth.email')}</label>
         <input
           type="email"
           name="email"
           value={formData.email}
           onChange={handleChange}
+          required
           placeholder={t('auth.emailPlaceholder')}
           className={errors.email ? 'error' : ''}
         />
         {errors.email && <span className="error-message">{errors.email}</span>}
       </div>
-
       <div className="form-group">
+        <label>{t('auth.password')}</label>
         <div className="password-input-container">
           <input
             type={showPassword ? 'text' : 'password'}
             name="password"
             value={formData.password}
             onChange={handleChange}
+            required
             placeholder={t('auth.passwordPlaceholder')}
             className={errors.password ? 'error' : ''}
           />
@@ -91,11 +101,14 @@ const LoginForm = ({ onSwitchToRegister, onSwitchToRecovery }) => {
         </div>
         {errors.password && <span className="error-message">{errors.password}</span>}
       </div>
-
-      <button type="submit" className="auth-button">
-        {t('auth.login')}
+      {errors.general && <span className="error-message">{errors.general}</span>}
+      <button
+        type="submit"
+        className="auth-button"
+        disabled={loading}
+      >
+        {loading ? t('auth.loading') : t('auth.login')}
       </button>
-
       <button
         type="button"
         onClick={onSwitchToRecovery}
@@ -103,13 +116,16 @@ const LoginForm = ({ onSwitchToRegister, onSwitchToRecovery }) => {
       >
         {t('auth.forgotPassword')}
       </button>
-
-      <p className="auth-switch">
+      <div className="auth-switch">
         {t('auth.noAccount')}{' '}
-        <button type="button" onClick={onSwitchToRegister} className="auth-switch-button">
+        <button
+          type="button"
+          className="auth-switch-button"
+          onClick={onSwitchToRegister}
+        >
           {t('auth.register')}
         </button>
-      </p>
+      </div>
     </form>
   );
 };

@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import styled from 'styled-components';
+import { useTheme } from '../../context/ThemeContext';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import RecoveryForm from './RecoveryForm';
 import './AuthModal.css';
 
 const AuthModal = ({ isOpen, onClose }) => {
-  const [mode, setMode] = useState('login'); // 'login', 'register', 'recovery'
+  const [mode, setMode] = useState('login');
   const { t } = useTranslation();
+  const { theme } = useTheme();
   const [error, setError] = useState('');
 
   if (!isOpen) return null;
@@ -30,6 +33,9 @@ const AuthModal = ({ isOpen, onClose }) => {
       case 'login':
         return (
           <LoginForm
+            onSubmit={(data) => {
+              console.log('Login data:', data);
+            }}
             onSwitchToRegister={() => setMode('register')}
             onSwitchToRecovery={() => setMode('recovery')}
           />
@@ -37,14 +43,19 @@ const AuthModal = ({ isOpen, onClose }) => {
       case 'register':
         return (
           <RegisterForm
+            onSubmit={(data) => {
+              console.log('Register data:', data);
+            }}
             onSwitchToLogin={() => setMode('login')}
           />
         );
       case 'recovery':
         return (
           <RecoveryForm
+            onSubmit={(email) => {
+              console.log('Recovery email:', email);
+            }}
             onSwitchToLogin={() => setMode('login')}
-            onSwitchToRegister={() => setMode('register')}
           />
         );
       default:
@@ -52,65 +63,14 @@ const AuthModal = ({ isOpen, onClose }) => {
     }
   };
 
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const handleRecoverySubmit = (e) => {
-    e.preventDefault();
-    const email = e.target.recoveryEmail.value;
-    
-    if (!validateEmail(email)) {
-      setError(t('error.email'));
-      return;
-    }
-    
-    // Aquí iría la lógica para enviar el correo de recuperación
-    console.log('Enviando correo de recuperación a:', email);
-    setError('');
-  };
-
   return (
-    <div className="auth-modal" onClick={onClose}>
-      <div className="auth-content" onClick={(e) => e.stopPropagation()}>
-        <div className="auth-header">
-          <h2>{getTitle()}</h2>
-          <button className="close-button" onClick={onClose}>×</button>
+    <div className="auth-modal-overlay" onClick={onClose}>
+      <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="auth-modal-header">
+          <h3>{getTitle()}</h3>
+          <button className="auth-modal-close" onClick={onClose}>×</button>
         </div>
         {renderForm()}
-        {mode === 'recovery' && (
-          <form onSubmit={handleRecoverySubmit} className="auth-form">
-            <div className="recovery-description">
-              <p>{t('auth.recoveryInstructions')}</p>
-            </div>
-            <div className="form-group">
-              <label htmlFor="recoveryEmail">{t('auth.email')}</label>
-              <input
-                type="email"
-                id="recoveryEmail"
-                name="recoveryEmail"
-                required
-                className={error ? 'error' : ''}
-                placeholder={t('auth.emailPlaceholder')}
-              />
-              {error && <span className="error-message">{error}</span>}
-            </div>
-            <button type="submit" className="auth-button">
-              {t('auth.sendRecoveryLink')}
-            </button>
-            <button
-              type="button"
-              className="back-to-login"
-              onClick={() => {
-                setMode('login');
-                setError('');
-              }}
-            >
-              {t('auth.backToLogin')}
-            </button>
-          </form>
-        )}
       </div>
     </div>
   );

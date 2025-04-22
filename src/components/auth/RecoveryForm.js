@@ -1,50 +1,74 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../../context/ThemeContext';
 import './AuthModal.css';
 
-const RecoveryForm = ({ onSwitchToLogin, onSwitchToRegister }) => {
+const RecoveryForm = ({ onSubmit, onSwitchToLogin }) => {
+  const { theme } = useTheme();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
-  const { t } = useTranslation();
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateEmail(email)) {
-      setError(t('error.email'));
+    setError('');
+    setSuccess('');
+
+    if (!email) {
+      setError(t('error.emailRequired'));
       return;
     }
-    setError('');
-    // Implementar lógica de recuperación
-    console.log('Enviando email de recuperación a:', email);
+
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setError(t('error.emailInvalid'));
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await onSubmit(email);
+      setSuccess(t('auth.recoverySuccess'));
+    } catch (err) {
+      setError(err.message || t('error.general'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="auth-form">
-      <p className="recovery-description">{t('auth.recoveryInstructions')}</p>
+    <form className="auth-form" onSubmit={handleSubmit}>
       <div className="form-group">
-        <label htmlFor="recovery-email">{t('auth.email')}</label>
+        <label>{t('auth.email')}</label>
         <input
           type="email"
-          id="recovery-email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className={error ? 'error' : ''}
           placeholder={t('auth.emailPlaceholder')}
+          className={error ? 'error' : ''}
         />
         {error && <span className="error-message">{error}</span>}
+        {success && <span className="success-message">{success}</span>}
       </div>
-      <button type="submit" className="auth-button">
-        {t('auth.sendRecoveryLink')}
+      <button
+        type="submit"
+        className="auth-button"
+        disabled={loading}
+      >
+        {loading ? t('auth.loading') : t('auth.recoveryButton')}
       </button>
-      <button type="button" onClick={onSwitchToLogin} className="auth-button secondary">
-        {t('auth.backToLogin')}
-      </button>
+      <div className="auth-switch">
+        {t('auth.rememberPassword')}{' '}
+        <button
+          type="button"
+          className="auth-switch-button"
+          onClick={onSwitchToLogin}
+        >
+          {t('auth.login')}
+        </button>
+      </div>
     </form>
   );
 };

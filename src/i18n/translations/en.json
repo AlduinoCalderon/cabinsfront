@@ -32,7 +32,13 @@
     "noAccount": "Don't have an account?",
     "haveAccount": "Already have an account?",
     "showPassword": "Show password",
-    "hidePassword": "Hide password"
+    "hidePassword": "Hide password",
+    "loading": "Loading...",
+    "closeModal": "Close modal",
+    "recoverySuccess": "Recovery email sent successfully",
+    "recoveryDescription": "Enter your email address and we'll send you a link to reset your password",
+    "recoveryButton": "Send recovery link",
+    "rememberPassword": "Remember your password?"
   },
   "error": {
     "email": "Please enter a valid email",
@@ -41,7 +47,11 @@
     "passwordMatch": "Passwords do not match",
     "firstName": "First name is required",
     "lastName": "Last name is required",
-    "phone": "Please enter a valid phone number"
+    "phone": "Please enter a valid phone number",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Email is not valid",
+    "passwordRequired": "Password is required",
+    "general": "An error occurred. Please try again."
   },
   "home": {
     "title": "Welcome to Our Cabins",
