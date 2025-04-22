@@ -6,6 +6,7 @@ import { translations } from '../../i18n/config';
 import { useAuth } from '../../context/AuthContext';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import './AuthModal.css';
+import { useTranslation } from 'react-i18next';
 
 const FormContainer = styled.div`
   width: 100%;
@@ -101,6 +102,7 @@ const RegisterForm = ({ onRegister, onSwitchToLogin }) => {
   const { language } = useLanguage();
   const t = translations[language];
   const { register } = useAuth();
+  const { t: i18nextT } = useTranslation();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -110,7 +112,7 @@ const RegisterForm = ({ onRegister, onSwitchToLogin }) => {
     lastName: '',
     phone: ''
   });
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -121,25 +123,29 @@ const RegisterForm = ({ onRegister, onSwitchToLogin }) => {
       ...prev,
       [name]: value
     }));
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-
-    if (formData.password !== formData.confirmPassword) {
-      setError(t.register.passwordsDontMatch);
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      await register(formData.name, formData.email, formData.password);
-    } catch (err) {
-      setError(err.message || t.register.error);
-    } finally {
-      setLoading(false);
+    if (validateForm()) {
+      setLoading(true);
+      try {
+        await register(formData.name, formData.email, formData.password);
+      } catch (err) {
+        setErrors({
+          ...errors,
+          general: err.message || i18nextT('error.general')
+        });
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -161,32 +167,32 @@ const RegisterForm = ({ onRegister, onSwitchToLogin }) => {
     const newErrors = {};
 
     if (!formData.email || !validateEmail(formData.email)) {
-      newErrors.email = t.error.email;
+      newErrors.email = i18nextT('error.email');
     }
 
     if (!formData.password) {
-      newErrors.password = t.error.password;
+      newErrors.password = i18nextT('error.password');
     } else if (!validatePassword(formData.password)) {
-      newErrors.password = t.error.passwordLength;
+      newErrors.password = i18nextT('error.passwordLength');
     }
 
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = t.error.passwordMatch;
+      newErrors.confirmPassword = i18nextT('error.passwordMatch');
     }
 
     if (!formData.firstName.trim()) {
-      newErrors.firstName = t.error.firstName;
+      newErrors.firstName = i18nextT('error.firstName');
     }
 
     if (!formData.lastName.trim()) {
-      newErrors.lastName = t.error.lastName;
+      newErrors.lastName = i18nextT('error.lastName');
     }
 
     if (!formData.phone || !validatePhone(formData.phone)) {
-      newErrors.phone = t.error.phone;
+      newErrors.phone = i18nextT('error.phone');
     }
 
-    setError(Object.keys(newErrors).length > 0 ? Object.values(newErrors).join('\n') : '');
+    setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
@@ -213,8 +219,11 @@ const RegisterForm = ({ onRegister, onSwitchToLogin }) => {
             value={formData.email}
             onChange={handleChange}
             required
+            placeholder={i18nextT('auth.emailPlaceholder')}
+            className={errors.email ? 'error' : ''}
             theme={theme}
           />
+          {errors.email && <ErrorMessage theme={theme}>{errors.email}</ErrorMessage>}
         </FormGroup>
         <FormGroup>
           <Label theme={theme}>{t.register.password}</Label>
@@ -225,18 +234,20 @@ const RegisterForm = ({ onRegister, onSwitchToLogin }) => {
               value={formData.password}
               onChange={handleChange}
               required
-              minLength="6"
+              placeholder={i18nextT('auth.passwordPlaceholder')}
+              className={errors.password ? 'error' : ''}
               theme={theme}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="password-toggle"
-              aria-label={showPassword ? t.auth.hidePassword : t.auth.showPassword}
+              aria-label={showPassword ? i18nextT('auth.hidePassword') : i18nextT('auth.showPassword')}
             >
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
           </div>
+          {errors.password && <ErrorMessage theme={theme}>{errors.password}</ErrorMessage>}
         </FormGroup>
         <FormGroup>
           <Label theme={theme}>{t.register.confirmPassword}</Label>
@@ -247,18 +258,20 @@ const RegisterForm = ({ onRegister, onSwitchToLogin }) => {
               value={formData.confirmPassword}
               onChange={handleChange}
               required
-              minLength="6"
+              placeholder={i18nextT('auth.confirmPasswordPlaceholder')}
+              className={errors.confirmPassword ? 'error' : ''}
               theme={theme}
             />
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               className="password-toggle"
-              aria-label={showConfirmPassword ? t.auth.hidePassword : t.auth.showPassword}
+              aria-label={showConfirmPassword ? i18nextT('auth.hidePassword') : i18nextT('auth.showPassword')}
             >
               {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
           </div>
+          {errors.confirmPassword && <ErrorMessage theme={theme}>{errors.confirmPassword}</ErrorMessage>}
         </FormGroup>
         <FormGroup>
           <Label theme={theme}>{t.register.firstName}</Label>
@@ -268,8 +281,11 @@ const RegisterForm = ({ onRegister, onSwitchToLogin }) => {
             value={formData.firstName}
             onChange={handleChange}
             required
+            placeholder={i18nextT('auth.firstNamePlaceholder')}
+            className={errors.firstName ? 'error' : ''}
             theme={theme}
           />
+          {errors.firstName && <ErrorMessage theme={theme}>{errors.firstName}</ErrorMessage>}
         </FormGroup>
         <FormGroup>
           <Label theme={theme}>{t.register.lastName}</Label>
@@ -279,8 +295,11 @@ const RegisterForm = ({ onRegister, onSwitchToLogin }) => {
             value={formData.lastName}
             onChange={handleChange}
             required
+            placeholder={i18nextT('auth.lastNamePlaceholder')}
+            className={errors.lastName ? 'error' : ''}
             theme={theme}
           />
+          {errors.lastName && <ErrorMessage theme={theme}>{errors.lastName}</ErrorMessage>}
         </FormGroup>
         <FormGroup>
           <Label theme={theme}>{t.register.phone}</Label>
@@ -290,10 +309,13 @@ const RegisterForm = ({ onRegister, onSwitchToLogin }) => {
             value={formData.phone}
             onChange={handleChange}
             required
+            placeholder={i18nextT('auth.phonePlaceholder')}
+            className={errors.phone ? 'error' : ''}
             theme={theme}
           />
+          {errors.phone && <ErrorMessage theme={theme}>{errors.phone}</ErrorMessage>}
         </FormGroup>
-        {error && <ErrorMessage theme={theme}>{error}</ErrorMessage>}
+        {errors.general && <ErrorMessage theme={theme}>{errors.general}</ErrorMessage>}
         <SubmitButton
           type="submit"
           disabled={loading}
@@ -302,13 +324,10 @@ const RegisterForm = ({ onRegister, onSwitchToLogin }) => {
           {loading ? t.register.loading : t.register.submit}
         </SubmitButton>
         <SwitchForm theme={theme}>
-          {t.register.haveAccount}{' '}
-          <a href="#" onClick={(e) => {
-            e.preventDefault();
-            onSwitchToLogin();
-          }}>
-            {t.register.login}
-          </a>
+          {i18nextT('auth.haveAccount')}{' '}
+          <button type="button" onClick={onSwitchToLogin} className="auth-switch-button">
+            {i18nextT('auth.login')}
+          </button>
         </SwitchForm>
       </form>
     </FormContainer>
