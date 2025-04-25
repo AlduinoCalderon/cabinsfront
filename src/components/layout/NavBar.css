@@ -8,7 +8,7 @@
   --nav-height: 4rem;
   --z-fixed: 100;
   --z-modal: 1000;
-  --transition: all 0.3s ease;
+  --transition: background-color 0.3s ease, color 0.3s ease;
   --border-color: rgba(0, 0, 0, 0.1);
   --hover-color: rgba(0, 0, 0, 0.05);
 }
@@ -60,6 +60,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 0 1.5rem;
+  background-color: var(--bg-color);
+  transition: var(--transition);
 }
 
 .nav-logo {
@@ -84,7 +86,7 @@
   background-color: var(--bg-color);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
   padding: 2rem 1.5rem;
-  transition: top 0.4s;
+  transition: top 0.4s, background-color 0.3s ease;
   z-index: var(--z-fixed);
 }
 
@@ -128,6 +130,8 @@
   display: flex;
   align-items: center;
   column-gap: 1rem;
+  background-color: var(--bg-color);
+  transition: var(--transition);
 }
 
 .theme-toggle,
@@ -197,7 +201,7 @@
   height: 100%;
   background-color: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px); /* Para Safari */
+  -webkit-backdrop-filter: blur(2px);
   z-index: calc(var(--z-fixed) - 1);
 }
 
@@ -220,6 +224,7 @@
     width: auto;
     padding: 0;
     box-shadow: none;
+    background-color: transparent;
   }
 
   .nav-list {
