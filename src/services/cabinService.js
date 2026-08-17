@@ -1,75 +1,60 @@
-import axios from 'axios';
+import { supabase } from './supabaseClient';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
-
-// Función para obtener el token de autenticación
-const getAuthHeader = () => {
-  const token = localStorage.getItem('authToken');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
-// Servicio para las cabañas
 const cabinService = {
-  // Obtener todas las cabañas (no requiere autenticación)
   getAllCabins: async () => {
     try {
-      const response = await axios.get(`${API_URL}/cabins`);
-      return response.data;
+      const { data, error } = await supabase.from('mogote_cabins').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
     } catch (error) {
-      console.error('Error al obtener cabañas:', error);
+      console.error('Error al obtener cabañas:', error.message);
       throw error;
     }
   },
 
-  // Obtener una cabaña por ID (no requiere autenticación)
   getCabinById: async (id) => {
     try {
-      const response = await axios.get(`${API_URL}/cabins/${id}`);
-      return response.data;
+      const { data, error } = await supabase.from('mogote_cabins').select('*').eq('id', id).single();
+      if (error) throw error;
+      return data;
     } catch (error) {
-      console.error(`Error al obtener cabaña con ID ${id}:`, error);
+      console.error(`Error al obtener cabaña con ID ${id}:`, error.message);
       throw error;
     }
   },
 
-  // Crear una nueva cabaña (requiere autenticación)
   createCabin: async (cabinData) => {
     try {
-      const response = await axios.post(`${API_URL}/cabins`, cabinData, {
-        headers: getAuthHeader()
-      });
-      return response.data;
+      const { data, error } = await supabase.from('mogote_cabins').insert(cabinData).select().single();
+      if (error) throw error;
+      return data;
     } catch (error) {
-      console.error('Error al crear cabaña:', error);
+      console.error('Error al crear cabaña:', error.message);
       throw error;
     }
   },
 
-  // Actualizar una cabaña (requiere autenticación)
   updateCabin: async (id, cabinData) => {
     try {
-      const response = await axios.put(`${API_URL}/cabins/${id}`, cabinData, {
-        headers: getAuthHeader()
-      });
-      return response.data;
+      const { data, error } = await supabase.from('mogote_cabins').update(cabinData).eq('id', id).select().single();
+      if (error) throw error;
+      return data;
     } catch (error) {
-      console.error(`Error al actualizar cabaña con ID ${id}:`, error);
+      console.error(`Error al actualizar cabaña con ID ${id}:`, error.message);
       throw error;
     }
   },
 
-  // Eliminar una cabaña (requiere autenticación)
   deleteCabin: async (id) => {
     try {
-      const response = await axios.delete(`${API_URL}/cabins/${id}`, {
-        headers: getAuthHeader()
-      });
-      return response.data;
+      const { data, error } = await supabase.from('mogote_cabins').delete().eq('id', id).select().single();
+      if (error) throw error;
+      return data;
     } catch (error) {
-      console.error(`Error al eliminar cabaña con ID ${id}:`, error);
+      console.error(`Error al eliminar cabaña con ID ${id}:`, error.message);
       throw error;
     }
   }
 };
 
-export default cabinService; 
+export default cabinService;

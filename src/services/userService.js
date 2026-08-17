@@ -1,53 +1,58 @@
-import axios from 'axios';
+import { supabase } from './supabaseClient';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
-
-// Función para obtener el token de autenticación
-const getAuthHeader = () => {
-  const token = localStorage.getItem('authToken');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
-// Servicio para el perfil de usuario
 const userService = {
-  // Obtener el perfil del usuario actual (requiere autenticación)
   getUserProfile: async () => {
     try {
-      const response = await axios.get(`${API_URL}/users/profile`, {
-        headers: getAuthHeader()
-      });
-      return response.data;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No hay usuario autenticado");
+
+      const { data, error } = await supabase
+        .from('mogote_profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+        
+      if (error) throw error;
+      return { ...data, email: user.email };
     } catch (error) {
-      console.error('Error al obtener perfil de usuario:', error);
+      console.error('Error al obtener perfil de usuario:', error.message);
       throw error;
     }
   },
 
-  // Actualizar el perfil del usuario (requiere autenticación)
   updateUserProfile: async (userData) => {
     try {
-      const response = await axios.put(`${API_URL}/users/profile`, userData, {
-        headers: getAuthHeader()
-      });
-      return response.data;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No hay usuario autenticado");
+
+      const { data, error } = await supabase
+        .from('mogote_profiles')
+        .update(userData)
+        .eq('id', user.id)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      return data;
     } catch (error) {
-      console.error('Error al actualizar perfil de usuario:', error);
+      console.error('Error al actualizar perfil de usuario:', error.message);
       throw error;
     }
   },
 
-  // Cambiar la contraseña del usuario (requiere autenticación)
   changePassword: async (passwordData) => {
     try {
-      const response = await axios.put(`${API_URL}/users/change-password`, passwordData, {
-        headers: getAuthHeader()
+      const { data, error } = await supabase.auth.updateUser({
+        password: passwordData.newPassword
       });
-      return response.data;
+      
+      if (error) throw error;
+      return data;
     } catch (error) {
-      console.error('Error al cambiar contraseña:', error);
+      console.error('Error al cambiar contraseña:', error.message);
       throw error;
     }
   }
 };
 
-export default userService; 
+export default userService;

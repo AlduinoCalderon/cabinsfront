@@ -1,79 +1,95 @@
-import axios from 'axios';
+import { supabase } from './supabaseClient';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
-
-// Función para obtener el token de autenticación
-const getAuthHeader = () => {
-  const token = localStorage.getItem('authToken');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
-// Servicio para las reservas
 const bookingService = {
-  // Obtener todas las reservas del usuario actual (requiere autenticación)
   getUserBookings: async () => {
     try {
-      const response = await axios.get(`${API_URL}/bookings/user`, {
-        headers: getAuthHeader()
-      });
-      return response.data;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No hay usuario autenticado");
+
+      const { data, error } = await supabase
+        .from('mogote_bookings')
+        .select(`*, mogote_cabins (*)`)
+        .eq('user_id', user.id)
+        .order('start_date', { ascending: false });
+
+      if (error) throw error;
+      return data;
     } catch (error) {
-      console.error('Error al obtener reservas del usuario:', error);
+      console.error('Error al obtener reservas del usuario:', error.message);
       throw error;
     }
   },
 
-  // Obtener una reserva por ID (requiere autenticación)
   getBookingById: async (id) => {
     try {
-      const response = await axios.get(`${API_URL}/bookings/${id}`, {
-        headers: getAuthHeader()
-      });
-      return response.data;
+      const { data, error } = await supabase
+        .from('mogote_bookings')
+        .select(`*, mogote_cabins (*)`)
+        .eq('id', id)
+        .single();
+        
+      if (error) throw error;
+      return data;
     } catch (error) {
-      console.error(`Error al obtener reserva con ID ${id}:`, error);
+      console.error(`Error al obtener reserva con ID ${id}:`, error.message);
       throw error;
     }
   },
 
-  // Crear una nueva reserva (requiere autenticación)
   createBooking: async (bookingData) => {
     try {
-      const response = await axios.post(`${API_URL}/bookings`, bookingData, {
-        headers: getAuthHeader()
-      });
-      return response.data;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No hay usuario autenticado");
+
+      const dataToInsert = { ...bookingData, user_id: user.id };
+      
+      const { data, error } = await supabase
+        .from('mogote_bookings')
+        .insert(dataToInsert)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      return data;
     } catch (error) {
-      console.error('Error al crear reserva:', error);
+      console.error('Error al crear reserva:', error.message);
       throw error;
     }
   },
 
-  // Actualizar una reserva (requiere autenticación)
   updateBooking: async (id, bookingData) => {
     try {
-      const response = await axios.put(`${API_URL}/bookings/${id}`, bookingData, {
-        headers: getAuthHeader()
-      });
-      return response.data;
+      const { data, error } = await supabase
+        .from('mogote_bookings')
+        .update(bookingData)
+        .eq('id', id)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      return data;
     } catch (error) {
-      console.error(`Error al actualizar reserva con ID ${id}:`, error);
+      console.error(`Error al actualizar reserva con ID ${id}:`, error.message);
       throw error;
     }
   },
 
-  // Cancelar una reserva (requiere autenticación)
   cancelBooking: async (id) => {
     try {
-      const response = await axios.put(`${API_URL}/bookings/${id}/cancel`, {}, {
-        headers: getAuthHeader()
-      });
-      return response.data;
+      const { data, error } = await supabase
+        .from('mogote_bookings')
+        .update({ status: 'cancelled' })
+        .eq('id', id)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      return data;
     } catch (error) {
-      console.error(`Error al cancelar reserva con ID ${id}:`, error);
+      console.error(`Error al cancelar reserva con ID ${id}:`, error.message);
       throw error;
     }
   }
 };
 
-export default bookingService; 
+export default bookingService;

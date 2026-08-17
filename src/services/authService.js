@@ -1,25 +1,17 @@
-import axios from 'axios';
+import { supabase } from './supabaseClient';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
-
-// Servicio de autenticación
 const authService = {
   // Iniciar sesión
   login: async (email, password) => {
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, {
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
       });
-      
-      if (response.data.token) {
-        localStorage.setItem('authToken', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-      }
-      
-      return response.data;
+      if (error) throw error;
+      return { user: data.user, token: data.session?.access_token };
     } catch (error) {
-      console.error('Error al iniciar sesión:', error);
+      console.error('Error al iniciar sesión:', error.message);
       throw error;
     }
   },
@@ -27,35 +19,50 @@ const authService = {
   // Registrar un nuevo usuario
   register: async (userData) => {
     try {
-      const response = await axios.post(`${API_URL}/auth/register`, userData);
-      return response.data;
+      const { data, error } = await supabase.auth.signUp({
+        email: userData.email,
+        password: userData.password,
+        options: {
+          data: {
+            name: userData.name || userData.nombre,
+          }
+        }
+      });
+      if (error) throw error;
+      return { user: data.user, token: data.session?.access_token };
     } catch (error) {
-      console.error('Error al registrar usuario:', error);
+      console.error('Error al registrar usuario:', error.message);
       throw error;
     }
   },
 
   // Cerrar sesión
-  logout: () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
+  logout: async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error.message);
+    }
   },
 
   // Obtener el usuario actual
-  getCurrentUser: () => {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+  getCurrentUser: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user;
   },
 
   // Verificar si el usuario está autenticado
-  isAuthenticated: () => {
-    return !!localStorage.getItem('authToken');
+  isAuthenticated: async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return !!session;
   },
 
   // Obtener el token de autenticación
-  getToken: () => {
-    return localStorage.getItem('authToken');
+  getToken: async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token;
   }
 };
 
-export default authService; 
+export default authService;
