@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { translations } from '../../i18n/config';
@@ -9,9 +9,7 @@ import mainImage from '../../assets/images/main.jpg';
 import senderismoImage from '../../assets/images/senderismo.jpg';
 import extremosImage from '../../assets/images/extremos.jpg';
 import cabana2 from '../../assets/images/cabanaelmogotedonaisabel2.jpg';
-import cabana3 from '../../assets/images/cabanaelmogotedonaisabel3.jpg';
 import cabana5 from '../../assets/images/cabanaelmogotedonaisabel5.jpg';
-import cabana8 from '../../assets/images/cabanaelmogotedonaisabel8.jpg';
 import cabana9 from '../../assets/images/cabanaelmogotedonaisabel9.jpg';
 import cabana11 from '../../assets/images/cabanaelmogotedonaisabel11.jpg';
 import cabana14 from '../../assets/images/cabanaelmogotedonaisabel14.jpg';

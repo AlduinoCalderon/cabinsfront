@@ -9,7 +9,6 @@ import './NavBar.css';
 const NavBar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [user, setUser] = useState(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { language, toggleLanguage } = useLanguage();
@@ -38,18 +37,13 @@ const NavBar: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    setUser(null);
-    setShowUserMenu(false);
-  };
+
 
   const toggleAuthForm = () => {
     setIsAuthOpen(!isAuthOpen);
   };
 
-  const toggleUserMenu = () => {
-    setShowUserMenu(!showUserMenu);
-  };
+
 
   const scrollToContact = () => {
     const footer = document.querySelector('footer');

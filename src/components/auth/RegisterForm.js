@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useTheme } from '../../context/ThemeContext';
+
 import { useAuth } from '../../context/AuthContext';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import './AuthModal.css';
 
 const RegisterForm = ({ onRegister, onSwitchToLogin }) => {
-  const { theme } = useTheme();
+
   const { register } = useAuth();
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
