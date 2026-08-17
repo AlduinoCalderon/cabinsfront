@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import authService from '../services/authService';
+import { supabase } from '../services/supabaseClient';
 
 const AuthContext = createContext();
 
@@ -15,26 +16,24 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Verificar si hay un token guardado al cargar la aplicación
-    const token = localStorage.getItem('token');
-    if (token) {
-      // Aquí podrías hacer una petición para verificar el token
-      // y obtener los datos del usuario
-      setUser({ token });
-    }
-    setLoading(false);
+    // Escuchar cambios en la autenticación de Supabase
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user || null);
+      setLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email, password) => {
     try {
       setError(null);
-      const response = await axios.post('/api/auth/login', { email, password });
-      const { token, user } = response.data;
-      localStorage.setItem('token', token);
-      setUser(user);
+      await authService.login(email, password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al iniciar sesión');
+      setError(err.message || 'Error al iniciar sesión');
       throw err;
     }
   };
@@ -42,29 +41,28 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       setError(null);
-      const response = await axios.post('/api/auth/register', userData);
-      const { token, user } = response.data;
-      localStorage.setItem('token', token);
-      setUser(user);
+      await authService.register(userData);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al registrar usuario');
+      setError(err.message || 'Error al registrar usuario');
       throw err;
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
+  const logout = async () => {
+    await authService.logout();
     navigate('/');
   };
 
   const resetPassword = async (email) => {
     try {
       setError(null);
-      await axios.post('/api/auth/reset-password', { email });
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/reset-password',
+      });
+      if (error) throw error;
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al restablecer contraseña');
+      setError(err.message || 'Error al restablecer contraseña');
       throw err;
     }
   };
@@ -86,4 +84,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export default AuthContext; 
+export default AuthContext;
