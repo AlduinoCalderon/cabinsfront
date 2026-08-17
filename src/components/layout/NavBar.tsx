@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { translations } from '../../i18n/translations';
+import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../auth/AuthModal';
 import './NavBar.css';
 
@@ -12,6 +13,8 @@ const NavBar: React.FC = () => {
 
   const { theme, toggleTheme } = useTheme();
   const { language, toggleLanguage } = useLanguage();
+  const { user, logout } = useAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const navigate = useNavigate();
   const userMenuRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -22,8 +25,9 @@ const NavBar: React.FC = () => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       
-
-      
+      if (userMenuRef.current && !userMenuRef.current.contains(target)) {
+        setShowUserMenu(false);
+      }
       // Cerrar menú de navegación si se hace clic fuera
       if (menuRef.current && !menuRef.current.contains(target) && 
           !target.closest('.nav-toggle')) {
@@ -38,7 +42,11 @@ const NavBar: React.FC = () => {
 
 
   const toggleAuthForm = () => {
-    setIsAuthOpen(!isAuthOpen);
+    if (user) {
+      setShowUserMenu(!showUserMenu);
+    } else {
+      setIsAuthOpen(!isAuthOpen);
+    }
   };
 
 
@@ -123,11 +131,24 @@ const NavBar: React.FC = () => {
 
           <div className="user-menu" ref={userMenuRef}>
             <button className="user-button" onClick={toggleAuthForm}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
+              {user ? (
+                <span style={{ fontWeight: 'bold', color: 'var(--primary-color)' }}>
+                  {user.email.charAt(0).toUpperCase()}
+                </span>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              )}
             </button>
+            {showUserMenu && user && (
+              <div className="user-dropdown" style={{ position: 'absolute', right: 0, top: '100%', background: 'white', border: '1px solid #ccc', borderRadius: '4px', padding: '10px', display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '150px', zIndex: 1000 }}>
+                <div style={{ paddingBottom: '10px', borderBottom: '1px solid #eee', fontSize: '0.9rem', color: '#666' }}>{user.email}</div>
+                <button onClick={() => { navigate('/admin'); setShowUserMenu(false); }} style={{ background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', padding: '5px 0' }}>Dashboard</button>
+                <button onClick={() => { logout(); setShowUserMenu(false); }} style={{ background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', padding: '5px 0', color: '#e53e3e' }}>Cerrar sesión</button>
+              </div>
+            )}
           </div>
 
           <div className="nav-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
