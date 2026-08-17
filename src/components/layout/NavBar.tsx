@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { translations } from '../../i18n/translations';
@@ -12,6 +12,7 @@ const NavBar: React.FC = () => {
 
   const { theme, toggleTheme } = useTheme();
   const { language, toggleLanguage } = useLanguage();
+  const navigate = useNavigate();
   const userMenuRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -67,8 +68,7 @@ const NavBar: React.FC = () => {
                 className="nav-link" 
                 onClick={() => {
                   setIsMenuOpen(false);
-                  // TODO: Implementar página de cabañas
-                  alert('Página en construcción');
+                  navigate('/cabins');
                 }}
               >
                 {t.cabins}
@@ -79,8 +79,7 @@ const NavBar: React.FC = () => {
                 className="nav-link" 
                 onClick={() => {
                   setIsMenuOpen(false);
-                  // TODO: Implementar página de reservas
-                  alert('Página en construcción');
+                  navigate('/reservar');
                 }}
               >
                 {t.reserve}
