@@ -4,7 +4,7 @@ import CabinAccordion from '../../components/user/CabinAccordion';
 import cabinService from '../../services/cabinService';
 
 const CabinsPage = () => {
-  const [cabins, setCabins] = useState([]);
+  const [, setCabins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
