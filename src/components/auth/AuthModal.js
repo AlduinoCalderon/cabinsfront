@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-
+import { useAuth } from '../../context/AuthContext';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import RecoveryForm from './RecoveryForm';
@@ -9,6 +9,7 @@ import './AuthModal.css';
 const AuthModal = ({ isOpen, onClose }) => {
   const [mode, setMode] = useState('login');
   const { t } = useTranslation();
+  const { login, register, resetPassword } = useAuth();
 
 
   if (!isOpen) return null;
@@ -31,8 +32,9 @@ const AuthModal = ({ isOpen, onClose }) => {
       case 'login':
         return (
           <LoginForm
-            onSubmit={(data) => {
-              console.log('Login data:', data);
+            onSubmit={async (data) => {
+              await login(data.email, data.password);
+              onClose();
             }}
             onSwitchToRegister={() => setMode('register')}
             onSwitchToRecovery={() => setMode('recovery')}
@@ -41,8 +43,9 @@ const AuthModal = ({ isOpen, onClose }) => {
       case 'register':
         return (
           <RegisterForm
-            onSubmit={(data) => {
-              console.log('Register data:', data);
+            onSubmit={async (data) => {
+              await register(data.email, data.password, data.name);
+              onClose();
             }}
             onSwitchToLogin={() => setMode('login')}
           />
@@ -50,8 +53,8 @@ const AuthModal = ({ isOpen, onClose }) => {
       case 'recovery':
         return (
           <RecoveryForm
-            onSubmit={(email) => {
-              console.log('Recovery email:', email);
+            onSubmit={async (email) => {
+              await resetPassword(email);
             }}
             onSwitchToLogin={() => setMode('login')}
           />
