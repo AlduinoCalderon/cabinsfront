@@ -5,9 +5,8 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import './AuthModal.css';
 
-const RegisterForm = ({ onRegister, onSwitchToLogin }) => {
+const RegisterForm = ({ onSubmit, onSwitchToLogin }) => {
 
-  const { register } = useAuth();
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
     firstName: '',
@@ -41,7 +40,7 @@ const RegisterForm = ({ onRegister, onSwitchToLogin }) => {
     if (validateForm()) {
       setLoading(true);
       try {
-        await register(formData.firstName, formData.lastName, formData.email, formData.password, formData.phone);
+        await onSubmit(formData);
       } catch (err) {
         setErrors({
           ...errors,

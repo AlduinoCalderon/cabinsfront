@@ -44,7 +44,12 @@ const AuthModal = ({ isOpen, onClose }) => {
         return (
           <RegisterForm
             onSubmit={async (data) => {
-              await register(data.email, data.password, data.name);
+              await register({
+                email: data.email,
+                password: data.password,
+                name: `${data.firstName} ${data.lastName}`,
+                phone: data.phone
+              });
               onClose();
             }}
             onSwitchToLogin={() => setMode('login')}
