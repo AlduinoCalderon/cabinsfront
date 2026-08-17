@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import styled from 'styled-components';
-import { useTheme } from '../../context/ThemeContext';
+
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import RecoveryForm from './RecoveryForm';
@@ -10,8 +9,7 @@ import './AuthModal.css';
 const AuthModal = ({ isOpen, onClose }) => {
   const [mode, setMode] = useState('login');
   const { t } = useTranslation();
-  const { theme } = useTheme();
-  const [error, setError] = useState('');
+
 
   if (!isOpen) return null;
 

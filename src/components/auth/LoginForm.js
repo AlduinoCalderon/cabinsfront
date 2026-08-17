@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../../context/ThemeContext';
+
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import './AuthModal.css';
 
 const LoginForm = ({ onSubmit, onSwitchToRegister, onSwitchToRecovery }) => {
-  const { theme } = useTheme();
+
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
     email: '',

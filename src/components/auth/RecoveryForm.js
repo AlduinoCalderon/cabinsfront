@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../../context/ThemeContext';
+
 import './AuthModal.css';
 
 const RecoveryForm = ({ onSubmit, onSwitchToLogin }) => {
-  const { theme } = useTheme();
+
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');

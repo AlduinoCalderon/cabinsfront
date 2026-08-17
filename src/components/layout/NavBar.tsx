@@ -9,7 +9,7 @@ import './NavBar.css';
 const NavBar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
+
   const { theme, toggleTheme } = useTheme();
   const { language, toggleLanguage } = useLanguage();
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -21,10 +21,7 @@ const NavBar: React.FC = () => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       
-      // Cerrar menú de usuario si se hace clic fuera
-      if (userMenuRef.current && !userMenuRef.current.contains(target)) {
-        setShowUserMenu(false);
-      }
+
       
       // Cerrar menú de navegación si se hace clic fuera
       if (menuRef.current && !menuRef.current.contains(target) && 
