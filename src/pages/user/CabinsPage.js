@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import CabinAccordion from '../../components/user/CabinAccordion';
-import axios from 'axios';
+import cabinService from '../../services/cabinService';
 
 const CabinsPage = () => {
   const [cabins, setCabins] = useState([]);
@@ -12,8 +12,8 @@ const CabinsPage = () => {
     const fetchCabins = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:3001/api/cabins');
-        setCabins(response.data);
+        const data = await cabinService.getAllCabins();
+        setCabins(data || []);
         setLoading(false);
       } catch (err) {
         setError('Error al cargar las cabañas');

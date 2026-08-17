@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import cabinService from '../../services/cabinService';
+import { supabase } from '../../services/supabaseClient';
 
 const AccordionContainer = styled.div`
   width: 100%;
@@ -165,8 +166,9 @@ const CabinAccordion = () => {
     const fetchCabins = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:3001/api/cabins');
-        setCabins(response.data);
+        const data = await cabinService.getAllCabins();
+        setCabins(data || []);
+        setAvailableCabins(data || []); // Por defecto todas
         setLoading(false);
       } catch (err) {
         setError('Error al cargar las cabañas');
@@ -180,17 +182,26 @@ const CabinAccordion = () => {
   
   useEffect(() => {
     const checkAvailability = async () => {
-      if (!startDate || nights < 1) return;
+      if (!startDate || nights < 1 || cabins.length === 0) return;
       
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:3001/api/cabins/availability`, {
-          params: {
-            startDate,
-            nights
-          }
-        });
-        setAvailableCabins(response.data);
+        const endTarget = new Date(startDate);
+        endTarget.setDate(endTarget.getDate() + nights);
+        const endDateStr = endTarget.toISOString().split('T')[0];
+
+        const { data, error } = await supabase
+          .from('mogote_bookings')
+          .select('cabin_id')
+          .neq('status', 'cancelled')
+          .lt('start_date', endDateStr)
+          .gt('end_date', startDate);
+
+        if (error) throw error;
+        
+        const overlappingIds = data.map(b => b.cabin_id);
+        const available = cabins.filter(c => !overlappingIds.includes(c.id));
+        setAvailableCabins(available);
         setLoading(false);
       } catch (err) {
         setError('Error al verificar disponibilidad');
@@ -200,7 +211,7 @@ const CabinAccordion = () => {
     };
     
     checkAvailability();
-  }, [startDate, nights]);
+  }, [startDate, nights, cabins]);
   
   const handleReserve = (cabinId) => {
     navigate('/reservar', { 

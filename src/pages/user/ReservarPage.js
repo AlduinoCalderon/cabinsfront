@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useLocation, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import bookingService from '../../services/bookingService';
 
 const ReservarPage = () => {
   const location = useLocation();
@@ -38,39 +38,27 @@ const ReservarPage = () => {
     setError('');
 
     try {
-      const userData = JSON.parse(localStorage.getItem('userData'));
-      if (!userData) {
-        setError('Debe iniciar sesión para realizar una reserva');
-        setLoading(false);
-        return;
-      }
-
       const reservationData = {
-        cabinId: cabinData.id,
-        userId: userData.id,
-        checkIn: formData.checkIn,
-        checkOut: formData.checkOut,
+        cabin_id: cabinData.id,
+        start_date: formData.checkIn,
+        end_date: formData.checkOut,
         guests: parseInt(formData.guests),
-        specialRequests: formData.specialRequests,
+        special_requests: formData.specialRequests,
         status: 'pending'
       };
 
-      const response = await axios.post('http://localhost:3001/api/reservations', reservationData, {
-        headers: {
-          'Authorization': `Bearer ${userData.token}`
-        }
-      });
+      const response = await bookingService.createBooking(reservationData);
 
-      if (response.data) {
+      if (response) {
         navigate('/reservas', { 
           state: { 
             message: 'Reserva creada exitosamente',
-            reservation: response.data
+            reservation: response
           }
         });
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al crear la reserva');
+      setError(err.message || 'Error al crear la reserva');
     } finally {
       setLoading(false);
     }

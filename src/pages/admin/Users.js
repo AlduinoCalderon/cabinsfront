@@ -143,19 +143,14 @@ const GestionUsuarios = () => {
     refContainer.current.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleResetPassword = (id) => {
+  const handleResetPassword = async (id) => {
     if (window.confirm("¿Estás seguro de que deseas resetear la contraseña de este usuario?")) {
-      fetch(`https://server-http-mfxe.onrender.com/users/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ password: 'contraseña123' })
-    })
-      .then(response => response.json())
-      .then(data => {
+      try {
+        await editUser(id, { password: 'contraseña123' });
         alert(`Contraseña reseteada. La nueva contraseña es: contraseña123`);
-      });
+      } catch (error) {
+        alert(error.message || 'Error al resetear contraseña');
+      }
     }
   };
 
