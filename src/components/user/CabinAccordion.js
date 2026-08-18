@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import cabinService from '../../services/cabinService';
 import { supabase } from '../../services/supabaseClient';
+import { useTranslation } from 'react-i18next';
 
 const AccordionContainer = styled.div`
   width: 100%;
@@ -165,6 +166,7 @@ const CabinAccordion = () => {
   const [nights, setNights] = useState(1);
   const [availableCabins, setAvailableCabins] = useState([]);
   const navigate = useNavigate();
+  const { t } = useTranslation();
   
   useEffect(() => {
     const fetchCabins = async () => {
@@ -232,7 +234,7 @@ const CabinAccordion = () => {
   };
   
   if (loading && cabins.length === 0) {
-    return <div>Cargando cabañas...</div>;
+    return <div>{t('cabins.loading')}</div>;
   }
   
   if (error) {
@@ -243,7 +245,7 @@ const CabinAccordion = () => {
     <AccordionContainer>
       <DateSelector>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'flex-start' }}>
-          <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Fecha de llegada</label>
+          <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{t('cabins.checkIn')}</label>
           <DateInput 
             type="date" 
             value={startDate}
@@ -252,7 +254,7 @@ const CabinAccordion = () => {
           />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'flex-start' }}>
-          <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Noches</label>
+          <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{t('cabins.nights')}</label>
           <NightsInput 
             type="number" 
             value={nights}
@@ -272,12 +274,12 @@ const CabinAccordion = () => {
             <CardContent>
               <CardTitle>{cabin.name}</CardTitle>
               <CardDescription>{cabin.description}</CardDescription>
-              <CardPrice>${cabin.price_per_night} por noche</CardPrice>
+              <CardPrice>${cabin.price_per_night} {t('cabins.perNight')}</CardPrice>
               <ReserveButton 
                 onClick={() => handleReserve(cabin.id)}
                 disabled={!isCabinAvailable(cabin.id)}
               >
-                {isCabinAvailable(cabin.id) ? 'Reservar' : 'No disponible'}
+                {isCabinAvailable(cabin.id) ? t('cabins.reserve') : t('cabins.notAvailable')}
               </ReserveButton>
             </CardContent>
           </Card>

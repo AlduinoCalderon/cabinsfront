@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import CabinAccordion from '../../components/user/CabinAccordion';
 import cabinService from '../../services/cabinService';
+import { useTranslation } from 'react-i18next';
 
 const CabinsPage = () => {
+  const { t } = useTranslation();
   const [, setCabins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -28,16 +30,15 @@ const CabinsPage = () => {
   return (
     <CabinsContainer>
       <PageHeader>
-        <PageTitle>Nuestras Cabañas</PageTitle>
+        <PageTitle>{t('cabins.title')}</PageTitle>
         <PageDescription>
-          Descubre nuestras acogedoras cabañas, perfectas para una escapada en la naturaleza.
-          Selecciona tus fechas y encuentra la cabaña ideal para tu próxima aventura.
+          {t('cabins.description')}
         </PageDescription>
       </PageHeader>
 
       {loading ? (
         <LoadingContainer>
-          <LoadingSpinner>Cargando cabañas...</LoadingSpinner>
+          <LoadingSpinner>{t('cabins.loading')}</LoadingSpinner>
         </LoadingContainer>
       ) : error ? (
         <ErrorContainer>

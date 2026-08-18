@@ -80,5 +80,20 @@
       "phone": "Phone",
       "email": "Email"
     }
+  },
+  "cabins": {
+    "title": "Our Cabins",
+    "description": "Discover our cozy cabins, perfect for a nature getaway. Select your dates and find the ideal cabin for your next adventure.",
+    "loading": "Loading cabins...",
+    "errorLoading": "Error loading cabins",
+    "checkIn": "Check-in date",
+    "nights": "Nights",
+    "perNight": "per night",
+    "reserve": "Book",
+    "notAvailable": "Not available"
+  },
+  "footer": {
+    "rights": "All rights reserved.",
+    "goUp": "Go up"
   }
 } 

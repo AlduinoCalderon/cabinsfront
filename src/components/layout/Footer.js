@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { useTranslation } from 'react-i18next';
 
 const FooterContainer = styled.footer`
   background-color: #2c3e50 !important;
@@ -152,6 +153,7 @@ const GoToTopButton = styled.button`
 `;
 
 const Footer = () => {
+  const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
 
   const toggleVisibility = () => {
@@ -180,7 +182,7 @@ const Footer = () => {
     <FooterContainer>
       <FooterContent>
         <FooterSection>
-          <h3>Contacto</h3>
+          <h3>{t('home.contact.title')}</h3>
           <ContactInfo>
             <p>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -215,10 +217,10 @@ const Footer = () => {
       </FooterContent>
 
       <FooterBottom>
-        <p>&copy; {new Date().getFullYear()} Cabañas El Mogote Doña Isabel. Todos los derechos reservados.</p>
+        <p>&copy; {new Date().getFullYear()} Cabañas El Mogote Doña Isabel. {t('footer.rights')}</p>
       </FooterBottom>
 
-      <GoToTopButton visible={isVisible} onClick={scrollToTop} aria-label="Ir arriba">
+      <GoToTopButton visible={isVisible} onClick={scrollToTop} aria-label={t('footer.goUp')}>
         <i className="fas fa-arrow-up"></i>
       </GoToTopButton>
     </FooterContainer>

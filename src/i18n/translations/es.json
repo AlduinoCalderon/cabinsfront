@@ -80,5 +80,20 @@
       "phone": "Teléfono",
       "email": "Correo Electrónico"
     }
+  },
+  "cabins": {
+    "title": "Nuestras Cabañas",
+    "description": "Descubre nuestras acogedoras cabañas, perfectas para una escapada en la naturaleza. Selecciona tus fechas y encuentra la cabaña ideal para tu próxima aventura.",
+    "loading": "Cargando cabañas...",
+    "errorLoading": "Error al cargar las cabañas",
+    "checkIn": "Fecha de llegada",
+    "nights": "Noches",
+    "perNight": "por noche",
+    "reserve": "Reservar",
+    "notAvailable": "No disponible"
+  },
+  "footer": {
+    "rights": "Todos los derechos reservados.",
+    "goUp": "Ir arriba"
   }
 } 
