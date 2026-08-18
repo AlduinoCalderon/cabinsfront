@@ -63,13 +63,14 @@ const PageHeader = styled.div`
 
 const PageTitle = styled.h1`
   font-size: 2.5rem;
-  color: #333;
+  color: var(--text-color, #333);
   margin-bottom: 20px;
 `;
 
 const PageDescription = styled.p`
   font-size: 1.2rem;
-  color: #666;
+  color: var(--text-color, #666);
+  opacity: 0.8;
   max-width: 800px;
   margin: 0 auto;
   line-height: 1.6;

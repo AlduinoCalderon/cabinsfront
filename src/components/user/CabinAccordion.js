@@ -24,6 +24,8 @@ const DateInput = styled.input`
   border: 1px solid #ddd;
   border-radius: 5px;
   font-size: 16px;
+  color: #333;
+  background-color: #fff;
 `;
 
 const NightsInput = styled.input`
@@ -32,6 +34,8 @@ const NightsInput = styled.input`
   border-radius: 5px;
   font-size: 16px;
   width: 100px;
+  color: #333;
+  background-color: #fff;
 `;
 
 const CardsContainer = styled.div`
@@ -238,18 +242,24 @@ const CabinAccordion = () => {
   return (
     <AccordionContainer>
       <DateSelector>
-        <DateInput 
-          type="date" 
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          min={new Date().toISOString().split('T')[0]}
-        />
-        <NightsInput 
-          type="number" 
-          value={nights}
-          onChange={(e) => setNights(Math.max(1, parseInt(e.target.value) || 1))}
-          min="1"
-        />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'flex-start' }}>
+          <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Fecha de llegada</label>
+          <DateInput 
+            type="date" 
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            min={new Date().toISOString().split('T')[0]}
+          />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'flex-start' }}>
+          <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Noches</label>
+          <NightsInput 
+            type="number" 
+            value={nights}
+            onChange={(e) => setNights(Math.max(1, parseInt(e.target.value) || 1))}
+            min="1"
+          />
+        </div>
       </DateSelector>
       
       <CardsContainer>
