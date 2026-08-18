@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-
-import { useAuth } from '../../context/AuthContext';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import './AuthModal.css';
