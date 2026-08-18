@@ -82,17 +82,7 @@ const NavBar: React.FC = () => {
                 {t.cabins}
               </button>
             </li>
-            <li className="nav-item">
-              <button 
-                className="nav-link" 
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  navigate('/reservar');
-                }}
-              >
-                {t.reserve}
-              </button>
-            </li>
+
             <li className="nav-item">
               <button 
                 className="nav-link" 

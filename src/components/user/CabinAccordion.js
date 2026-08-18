@@ -268,11 +268,11 @@ const CabinAccordion = () => {
             key={cabin.id} 
             isAvailable={isCabinAvailable(cabin.id)}
           >
-            <CardImage src={cabin.imageUrl || '/placeholder-cabin.jpg'} alt={cabin.name} />
+            <CardImage src={cabin.image_url || '/placeholder-cabin.jpg'} alt={cabin.name} />
             <CardContent>
               <CardTitle>{cabin.name}</CardTitle>
               <CardDescription>{cabin.description}</CardDescription>
-              <CardPrice>${cabin.price} por noche</CardPrice>
+              <CardPrice>${cabin.price_per_night} por noche</CardPrice>
               <ReserveButton 
                 onClick={() => handleReserve(cabin.id)}
                 disabled={!isCabinAvailable(cabin.id)}
