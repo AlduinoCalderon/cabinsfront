@@ -91,6 +91,7 @@ const CardContent = styled.div`
 
 const CardTitle = styled.h3`
   margin-left: 10px;
+  color: #ffffff;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
   transform: translateY(100%);
   opacity: 0;
@@ -104,6 +105,7 @@ const CardTitle = styled.h3`
 
 const CardDescription = styled.p`
   margin-left: 10px;
+  color: #ffffff;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
   transform: translateY(100%);
   opacity: 0;
@@ -120,6 +122,7 @@ const CardPrice = styled.div`
   margin-left: 10px;
   margin-top: 10px;
   font-weight: bold;
+  color: #ffffff;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
   transform: translateY(100%);
   opacity: 0;
