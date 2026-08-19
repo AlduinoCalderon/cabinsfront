@@ -5,10 +5,17 @@ const LanguageContext = createContext();
 
 export const LanguageProvider = ({ children }) => {
   const { i18n } = useTranslation();
-  const [language, setLanguage] = useState(i18n.language || 'es');
+  
+  const getBaseLang = (lang) => {
+    if (!lang) return 'es';
+    const base = lang.split('-')[0];
+    return base === 'en' ? 'en' : 'es';
+  };
+
+  const [language, setLanguage] = useState(getBaseLang(i18n.language));
 
   useEffect(() => {
-    setLanguage(i18n.language || 'es');
+    setLanguage(getBaseLang(i18n.language));
   }, [i18n.language]);
 
   const toggleLanguage = () => {
