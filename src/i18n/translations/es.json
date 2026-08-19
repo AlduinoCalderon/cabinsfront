@@ -102,6 +102,17 @@
     "continueBooking": "Continuar con la reserva",
     "chooseDates": "Elige tus fechas"
   },
+  "reservar": {
+    "title": "Reservar Cabaña",
+    "checkIn": "Fecha de entrada",
+    "checkOut": "Fecha de salida",
+    "guests": "Número de huéspedes",
+    "specialRequests": "Solicitudes especiales",
+    "specialRequestsPlaceholder": "Ingrese cualquier solicitud especial o requerimiento adicional",
+    "confirm": "Confirmar Reserva",
+    "processing": "Procesando...",
+    "notFound": "No se encontró información de la cabaña. Por favor, regrese a la página principal."
+  },
   "footer": {
     "rights": "Todos los derechos reservados.",
     "goUp": "Ir arriba"

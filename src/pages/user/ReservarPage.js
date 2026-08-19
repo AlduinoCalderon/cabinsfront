@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useLocation, useNavigate } from 'react-router-dom';
 import bookingService from '../../services/bookingService';
+import { useTranslation } from 'react-i18next';
 
 const ReservarPage = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const cabinData = location.state?.cabinData;
@@ -19,7 +21,7 @@ const ReservarPage = () => {
   if (!cabinData) {
     return (
       <Container>
-        <ErrorMessage>No se encontró información de la cabaña. Por favor, regrese a la página principal.</ErrorMessage>
+        <ErrorMessage>{t('reservar.notFound')}</ErrorMessage>
       </Container>
     );
   }
@@ -66,20 +68,20 @@ const ReservarPage = () => {
 
   return (
     <Container>
-      <Title>Reservar Cabaña</Title>
+      <Title>{t('reservar.title')}</Title>
       <CabinInfo>
         <CabinImage src={cabinData.imageUrl} alt={cabinData.name} />
         <CabinDetails>
           <h2>{cabinData.name}</h2>
           <p>{cabinData.description}</p>
-          <Price>${cabinData.price} por noche</Price>
+          <Price>${cabinData.price} {t('cabins.perNight')}</Price>
         </CabinDetails>
       </CabinInfo>
 
       <FormContainer>
         <Form onSubmit={handleSubmit}>
           <FormGroup>
-            <Label>Fecha de entrada</Label>
+            <Label>{t('reservar.checkIn')}</Label>
             <Input
               type="date"
               name="checkIn"
@@ -91,7 +93,7 @@ const ReservarPage = () => {
           </FormGroup>
 
           <FormGroup>
-            <Label>Fecha de salida</Label>
+            <Label>{t('reservar.checkOut')}</Label>
             <Input
               type="date"
               name="checkOut"
@@ -103,7 +105,7 @@ const ReservarPage = () => {
           </FormGroup>
 
           <FormGroup>
-            <Label>Número de huéspedes</Label>
+            <Label>{t('reservar.guests')}</Label>
             <Input
               type="number"
               name="guests"
@@ -116,19 +118,19 @@ const ReservarPage = () => {
           </FormGroup>
 
           <FormGroup>
-            <Label>Solicitudes especiales</Label>
+            <Label>{t('reservar.specialRequests')}</Label>
             <TextArea
               name="specialRequests"
               value={formData.specialRequests}
               onChange={handleInputChange}
-              placeholder="Ingrese cualquier solicitud especial o requerimiento adicional"
+              placeholder={t('reservar.specialRequestsPlaceholder')}
             />
           </FormGroup>
 
           {error && <ErrorMessage>{error}</ErrorMessage>}
 
           <SubmitButton type="submit" disabled={loading}>
-            {loading ? 'Procesando...' : 'Confirmar Reserva'}
+            {loading ? t('reservar.processing') : t('reservar.confirm')}
           </SubmitButton>
         </Form>
       </FormContainer>
@@ -144,7 +146,7 @@ const Container = styled.div`
 
 const Title = styled.h1`
   text-align: center;
-  color: #333;
+  color: var(--first-color);
   margin-bottom: 2rem;
 `;
 
@@ -152,7 +154,7 @@ const CabinInfo = styled.div`
   display: flex;
   gap: 2rem;
   margin-bottom: 2rem;
-  background: #fff;
+  background-color: var(--card-bg);
   padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -170,11 +172,11 @@ const CabinDetails = styled.div`
 
   h2 {
     margin-bottom: 1rem;
-    color: #333;
+    color: var(--first-color);
   }
 
   p {
-    color: #666;
+    color: var(--text-color);
     margin-bottom: 1rem;
   }
 `;
@@ -186,7 +188,7 @@ const Price = styled.div`
 `;
 
 const FormContainer = styled.div`
-  background: #fff;
+  background-color: var(--card-bg);
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -206,7 +208,7 @@ const FormGroup = styled.div`
 
 const Label = styled.label`
   font-weight: 500;
-  color: #333;
+  color: var(--text-color);
 `;
 
 const Input = styled.input`
@@ -214,6 +216,8 @@ const Input = styled.input`
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 
   &:focus {
     outline: none;
@@ -228,6 +232,8 @@ const TextArea = styled.textarea`
   font-size: 1rem;
   min-height: 100px;
   resize: vertical;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 
   &:focus {
     outline: none;

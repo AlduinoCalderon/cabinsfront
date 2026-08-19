@@ -102,6 +102,17 @@
     "continueBooking": "Continue booking",
     "chooseDates": "Choose your dates"
   },
+  "reservar": {
+    "title": "Book Cabin",
+    "checkIn": "Check-in Date",
+    "checkOut": "Check-out Date",
+    "guests": "Number of Guests",
+    "specialRequests": "Special Requests",
+    "specialRequestsPlaceholder": "Enter any special requests or additional requirements",
+    "confirm": "Confirm Booking",
+    "processing": "Processing...",
+    "notFound": "Cabin information not found. Please return to the main page."
+  },
   "footer": {
     "rights": "All rights reserved.",
     "goUp": "Go up"
