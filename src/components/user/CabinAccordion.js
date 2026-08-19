@@ -134,7 +134,6 @@ const CardPrice = styled.div`
     transform: translateY(0);
   }
 `;
-`;
 
 const CabinAccordion = () => {
   const [cabins, setCabins] = useState([]);
