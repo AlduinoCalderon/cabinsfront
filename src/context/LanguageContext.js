@@ -1,12 +1,20 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const LanguageContext = createContext();
 
 export const LanguageProvider = ({ children }) => {
-  const [language, setLanguage] = useState('es');
+  const { i18n } = useTranslation();
+  const [language, setLanguage] = useState(i18n.language || 'es');
+
+  useEffect(() => {
+    setLanguage(i18n.language || 'es');
+  }, [i18n.language]);
 
   const toggleLanguage = () => {
-    setLanguage(prevLanguage => prevLanguage === 'es' ? 'en' : 'es');
+    const newLang = language === 'es' ? 'en' : 'es';
+    setLanguage(newLang);
+    i18n.changeLanguage(newLang);
   };
 
   return (
