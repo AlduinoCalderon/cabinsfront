@@ -16,9 +16,22 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Escuchar cambios en la autenticación de Supabase
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user || null);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const currentUser = session?.user || null;
+      if (currentUser) {
+        // Fetch user profile to get the role
+        const { data: profile } = await supabase
+          .from('mogote_profiles')
+          .select('*')
+          .eq('id', currentUser.id)
+          .single();
+          
+        if (profile) {
+          currentUser.profile = profile;
+          currentUser.role = profile.role;
+        }
+      }
+      setUser(currentUser);
       setLoading(false);
     });
 

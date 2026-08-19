@@ -119,6 +119,12 @@ const NavBar: React.FC = () => {
             {language === 'en' ? 'EN' : 'ES'}
           </button>
 
+          {user && (
+            <Link to="/dashboard" style={{ color: 'var(--text-color)', marginLeft: '1rem', fontWeight: 'bold' }}>
+              Mi Panel
+            </Link>
+          )}
+
           <div className="user-menu" ref={userMenuRef}>
             <button className="user-button" onClick={toggleAuthForm}>
               {user ? (

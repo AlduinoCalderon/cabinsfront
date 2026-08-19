@@ -10,6 +10,8 @@ import HomePage from './pages/public/HomePage';
 import CabinsPage from './pages/user/CabinsPage';
 import CabinDetailsPage from './pages/user/CabinDetailsPage';
 import ReservarPage from './pages/user/ReservarPage';
+import DashboardPage from './pages/user/DashboardPage';
+import ProtectedRoute from './components/common/ProtectedRoute';
 import './App.css';
 
 function App() {
@@ -26,7 +28,8 @@ function App() {
                     <Route path="/" element={<HomePage />} />
                     <Route path="/cabins" element={<CabinsPage />} />
                     <Route path="/cabins/:id" element={<CabinDetailsPage />} />
-                    <Route path="/reservar" element={<ReservarPage />} />
+                    <Route path="/reservar" element={<ProtectedRoute><ReservarPage /></ProtectedRoute>} />
+                    <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
                     <Route path="*" element={<HomePage />} />
                   </Routes>
                 </main>

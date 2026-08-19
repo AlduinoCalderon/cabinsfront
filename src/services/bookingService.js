@@ -20,6 +20,42 @@ const bookingService = {
     }
   },
 
+  getAllBookings: async () => {
+    try {
+      const { data, error } = await supabase
+        .from('mogote_bookings')
+        .select(`
+          *,
+          mogote_cabins (*),
+          mogote_profiles:user_id (name)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error al obtener todas las reservas:', error.message);
+      throw error;
+    }
+  },
+
+  updateBookingStatus: async (id, status) => {
+    try {
+      const { data, error } = await supabase
+        .from('mogote_bookings')
+        .update({ status })
+        .eq('id', id)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error(`Error al actualizar estado de la reserva ${id}:`, error.message);
+      throw error;
+    }
+  },
+
   getBookingById: async (id) => {
     try {
       const { data, error } = await supabase

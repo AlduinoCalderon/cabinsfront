@@ -118,7 +118,7 @@ const ReserveButton = styled.button`
 const CabinDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   
   const [cabin, setCabin] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -220,7 +220,7 @@ const CabinDetailsPage = () => {
             <FeatureTag>📶 {t('cabins.wifi')}</FeatureTag>
           </Features>
           <Description>
-            {cabin.description || t('cabins.defaultDescription')}
+            {(i18n.language === 'en' && cabin.en_description) ? cabin.en_description : (cabin.description || t('cabins.defaultDescription'))}
           </Description>
         </InfoSection>
 

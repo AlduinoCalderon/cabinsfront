@@ -236,20 +236,24 @@ const CabinAccordion = () => {
       </DateSelector>
       
       <CardsContainer>
-        {cabins.map((cabin) => (
-          <Card 
-            key={cabin.id} 
-            isAvailable={isCabinAvailable(cabin.id)}
-            onClick={() => handleCardClick(cabin.id)}
-          >
-            <CardImage src={cabin.image_url || '/placeholder-cabin.jpg'} alt={cabin.name} />
-            <CardContent>
-              <CardTitle>{cabin.name}</CardTitle>
-              <CardDescription>{cabin.description}</CardDescription>
-              <CardPrice>${cabin.price_per_night} {t('cabins.perNight')}</CardPrice>
-            </CardContent>
-          </Card>
-        ))}
+        {cabins.map((cabin) => {
+          const description = i18n.language === 'en' && cabin.en_description ? cabin.en_description : cabin.description;
+          
+          return (
+            <Card 
+              key={cabin.id} 
+              isAvailable={isCabinAvailable(cabin.id)}
+              onClick={() => handleCardClick(cabin.id)}
+            >
+              <CardImage src={cabin.image_url || '/placeholder-cabin.jpg'} alt={cabin.name} />
+              <CardContent>
+                <CardTitle>{cabin.name}</CardTitle>
+                <CardDescription>{description}</CardDescription>
+                <CardPrice>${cabin.price_per_night} {t('cabins.perNight')}</CardPrice>
+              </CardContent>
+            </Card>
+          );
+        })}
       </CardsContainer>
     </AccordionContainer>
   );
