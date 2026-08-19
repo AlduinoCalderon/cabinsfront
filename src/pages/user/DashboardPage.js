@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useAuth } from '../../context/AuthContext';
-import { useTranslation } from 'react-i18next';
 import bookingService from '../../services/bookingService';
 
 const Container = styled.div`
@@ -122,7 +121,6 @@ const PlaceholderText = styled.p`
 
 const DashboardPage = () => {
   const { user } = useAuth();
-  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('bookings');
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);

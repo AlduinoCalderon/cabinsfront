@@ -122,7 +122,6 @@ const CabinDetailsPage = () => {
   
   const [cabin, setCabin] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [bookedDates, setBookedDates] = useState([]);
   
   // Date selection states
   const [startDate, setStartDate] = useState(null);
