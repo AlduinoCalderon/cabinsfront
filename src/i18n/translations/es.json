@@ -90,7 +90,17 @@
     "nights": "Noches",
     "perNight": "por noche",
     "reserve": "Reservar",
-    "notAvailable": "No disponible"
+    "notAvailable": "No disponible",
+    "notFound": "Cabaña no encontrada",
+    "loading": "Cargando...",
+    "upTo": "Hasta",
+    "people": "personas",
+    "rating": "Calificación 5 Estrellas",
+    "wifi": "WiFi Incluido",
+    "defaultDescription": "Una hermosa cabaña para disfrutar de la naturaleza.",
+    "selectDates": "Selecciona tus fechas",
+    "continueBooking": "Continuar con la reserva",
+    "chooseDates": "Elige tus fechas"
   },
   "footer": {
     "rights": "Todos los derechos reservados.",

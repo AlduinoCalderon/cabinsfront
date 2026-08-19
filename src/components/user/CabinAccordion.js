@@ -134,11 +134,6 @@ const CardPrice = styled.div`
     transform: translateY(0);
   }
 `;
-
-  ${Card}:hover & {
-    opacity: 1;
-    transform: translateY(0);
-  }
 `;
 
 const CabinAccordion = () => {

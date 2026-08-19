@@ -90,7 +90,17 @@
     "nights": "Nights",
     "perNight": "per night",
     "reserve": "Book",
-    "notAvailable": "Not available"
+    "notAvailable": "Not available",
+    "notFound": "Cabin not found",
+    "loading": "Loading...",
+    "upTo": "Up to",
+    "people": "people",
+    "rating": "5-Star Rating",
+    "wifi": "WiFi Included",
+    "defaultDescription": "A beautiful cabin to enjoy nature.",
+    "selectDates": "Select your dates",
+    "continueBooking": "Continue booking",
+    "chooseDates": "Choose your dates"
   },
   "footer": {
     "rights": "All rights reserved.",

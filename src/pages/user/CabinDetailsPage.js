@@ -193,8 +193,8 @@ const CabinDetailsPage = () => {
     });
   };
 
-  if (loading) return <PageContainer><h2>Cargando...</h2></PageContainer>;
-  if (!cabin) return <PageContainer><h2>Cabaña no encontrada</h2></PageContainer>;
+  if (loading) return <PageContainer><h2>{t('cabins.loading')}</h2></PageContainer>;
+  if (!cabin) return <PageContainer><h2>{t('cabins.notFound')}</h2></PageContainer>;
 
   return (
     <PageContainer>
@@ -206,17 +206,17 @@ const CabinDetailsPage = () => {
           <Title>{cabin.name}</Title>
           <Price>${cabin.price_per_night} MXN {t('cabins.perNight')}</Price>
           <Features>
-            <FeatureTag>👥 Hasta {cabin.capacity} personas</FeatureTag>
-            <FeatureTag>✨ Calificación 5 Estrellas</FeatureTag>
-            <FeatureTag>📶 WiFi Incluido</FeatureTag>
+            <FeatureTag>👥 {t('cabins.upTo')} {cabin.capacity} {t('cabins.people')}</FeatureTag>
+            <FeatureTag>✨ {t('cabins.rating')}</FeatureTag>
+            <FeatureTag>📶 {t('cabins.wifi')}</FeatureTag>
           </Features>
           <Description>
-            {cabin.description || 'Una hermosa cabaña para disfrutar de la naturaleza.'}
+            {cabin.description || t('cabins.defaultDescription')}
           </Description>
         </InfoSection>
 
         <BookingSection>
-          <h3>Selecciona tus fechas</h3>
+          <h3>{t('cabins.selectDates')}</h3>
           <DatePicker
             selected={startDate}
             onChange={onChangeDates}
@@ -232,7 +232,7 @@ const CabinDetailsPage = () => {
             disabled={!startDate || !endDate}
             onClick={handleReserve}
           >
-            {startDate && endDate ? 'Continuar con la reserva' : 'Elige tus fechas'}
+            {startDate && endDate ? t('cabins.continueBooking') : t('cabins.chooseDates')}
           </ReserveButton>
         </BookingSection>
       </ContentGrid>
