@@ -126,7 +126,8 @@ const CabinDetailsPage = () => {
   
   // Date selection states
   const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [nights, setNights] = useState(1);
+  const [bookedNights, setBookedNights] = useState(new Set());
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -147,17 +148,17 @@ const CabinDetailsPage = () => {
           
         if (error) throw error;
         
-        const datesToBlock = [];
+        const nightsBlocked = new Set();
         bookings.forEach(booking => {
           let curr = new Date(booking.start_date);
           const end = new Date(booking.end_date);
           while (curr < end) {
-            datesToBlock.push(new Date(curr));
+            nightsBlocked.add(curr.toISOString().split('T')[0]);
             curr.setDate(curr.getDate() + 1);
           }
         });
         
-        setBookedDates(datesToBlock);
+        setBookedNights(nightsBlocked);
       } catch (err) {
         console.error("Error fetching cabin details:", err);
       } finally {
@@ -168,27 +169,35 @@ const CabinDetailsPage = () => {
     if (id) fetchDetails();
   }, [id]);
 
-  const onChangeDates = (dates) => {
-    const [start, end] = dates;
-    setStartDate(start);
-    setEndDate(end);
+  const isDateAvailableForNights = (date, selectedNights) => {
+    let curr = new Date(date);
+    for (let i = 0; i < selectedNights; i++) {
+      const dateString = curr.toISOString().split('T')[0];
+      if (bookedNights.has(dateString)) return false;
+      curr.setDate(curr.getDate() + 1);
+    }
+    return true;
+  };
+
+  const onChangeDate = (date) => {
+    setStartDate(date);
   };
 
   const handleReserve = () => {
-    if (!startDate || !endDate) return;
+    if (!startDate || nights < 1) return;
     
-    // Calculate nights
-    const diffTime = Math.abs(endDate - startDate);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    // Calculate checkOut
+    const checkOutDate = new Date(startDate);
+    checkOutDate.setDate(checkOutDate.getDate() + nights);
     
     // Preparar el estado para ReservarPage. Nota que ReservarPage espera checkIn/checkOut
     navigate('/reservar', {
       state: {
         cabinData: { ...cabin, imageUrl: cabin.image_url, price: cabin.price_per_night },
         checkIn: startDate.toISOString().split('T')[0],
-        checkOut: endDate.toISOString().split('T')[0],
+        checkOut: checkOutDate.toISOString().split('T')[0],
         guests: 1, // Default guests
-        nights: diffDays
+        nights: nights
       }
     });
   };
@@ -216,23 +225,42 @@ const CabinDetailsPage = () => {
         </InfoSection>
 
         <BookingSection>
-          <h3>{t('cabins.selectDates')}</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%', marginBottom: '1rem' }}>
+            <label style={{ fontWeight: 'bold' }}>{t('cabins.nights', 'Número de noches')}</label>
+            <input 
+              type="number" 
+              min="1" 
+              value={nights} 
+              onChange={(e) => {
+                const val = parseInt(e.target.value);
+                setNights(val > 0 ? val : 1);
+                setStartDate(null); // Reset date when nights change
+              }}
+              style={{
+                padding: '0.5rem',
+                borderRadius: '5px',
+                border: '1px solid #ddd',
+                fontSize: '1rem',
+                backgroundColor: 'var(--bg-color)',
+                color: 'var(--text-color)'
+              }}
+            />
+          </div>
+
+          <h3>{t('cabins.selectCheckIn', 'Selecciona tu fecha de entrada')}</h3>
           <DatePicker
             selected={startDate}
-            onChange={onChangeDates}
-            startDate={startDate}
-            endDate={endDate}
-            selectsRange
+            onChange={onChangeDate}
             inline
             minDate={new Date()}
-            excludeDates={bookedDates}
+            filterDate={(date) => isDateAvailableForNights(date, nights)}
             monthsShown={1}
           />
           <ReserveButton 
-            disabled={!startDate || !endDate}
+            disabled={!startDate}
             onClick={handleReserve}
           >
-            {startDate && endDate ? t('cabins.continueBooking') : t('cabins.chooseDates')}
+            {startDate ? t('cabins.continueBooking') : t('cabins.chooseDates')}
           </ReserveButton>
         </BookingSection>
       </ContentGrid>
