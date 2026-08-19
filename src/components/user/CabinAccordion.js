@@ -143,7 +143,7 @@ const CabinAccordion = () => {
   const [nights, setNights] = useState(1);
   const [availableCabins, setAvailableCabins] = useState([]);
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   
   useEffect(() => {
     const fetchCabins = async () => {
