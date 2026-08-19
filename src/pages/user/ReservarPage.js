@@ -8,9 +8,9 @@ const ReservarPage = () => {
   const navigate = useNavigate();
   const cabinData = location.state?.cabinData;
   const [formData, setFormData] = useState({
-    checkIn: '',
-    checkOut: '',
-    guests: 1,
+    checkIn: location.state?.checkIn || '',
+    checkOut: location.state?.checkOut || '',
+    guests: location.state?.guests || 1,
     specialRequests: ''
   });
   const [loading, setLoading] = useState(false);

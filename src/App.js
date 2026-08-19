@@ -8,6 +8,7 @@ import NavBar from './components/layout/NavBar';
 import Footer from './components/layout/Footer';
 import HomePage from './pages/public/HomePage';
 import CabinsPage from './pages/user/CabinsPage';
+import CabinDetailsPage from './pages/user/CabinDetailsPage';
 import ReservarPage from './pages/user/ReservarPage';
 import './App.css';
 
@@ -24,6 +25,7 @@ function App() {
                   <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/cabins" element={<CabinsPage />} />
+                    <Route path="/cabins/:id" element={<CabinDetailsPage />} />
                     <Route path="/reservar" element={<ReservarPage />} />
                     <Route path="*" element={<HomePage />} />
                   </Routes>

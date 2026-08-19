@@ -135,32 +135,9 @@ const CardPrice = styled.div`
   }
 `;
 
-const ReserveButton = styled.button`
-  margin-left: 10px;
-  margin-top: 10px;
-  padding: 8px 15px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transform: translateY(100%);
-  opacity: 0;
-  transition: all 0.5s ease;
-  transition-delay: 0.3s;
-  
   ${Card}:hover & {
     opacity: 1;
     transform: translateY(0);
-  }
-  
-  &:hover {
-    background-color: #45a049;
-  }
-  
-  &:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
   }
 `;
 
@@ -225,14 +202,8 @@ const CabinAccordion = () => {
     checkAvailability();
   }, [startDate, nights, cabins]);
   
-  const handleReserve = (cabinId) => {
-    navigate('/reservar', { 
-      state: { 
-        cabinId,
-        startDate,
-        nights
-      } 
-    });
+  const handleCardClick = (cabinId) => {
+    navigate(`/cabins/${cabinId}`);
   };
   
   const isCabinAvailable = (cabinId) => {
@@ -275,18 +246,13 @@ const CabinAccordion = () => {
           <Card 
             key={cabin.id} 
             isAvailable={isCabinAvailable(cabin.id)}
+            onClick={() => handleCardClick(cabin.id)}
           >
             <CardImage src={cabin.image_url || '/placeholder-cabin.jpg'} alt={cabin.name} />
             <CardContent>
               <CardTitle>{cabin.name}</CardTitle>
               <CardDescription>{cabin.description}</CardDescription>
               <CardPrice>${cabin.price_per_night} {t('cabins.perNight')}</CardPrice>
-              <ReserveButton 
-                onClick={() => handleReserve(cabin.id)}
-                disabled={!isCabinAvailable(cabin.id)}
-              >
-                {isCabinAvailable(cabin.id) ? t('cabins.reserve') : t('cabins.notAvailable')}
-              </ReserveButton>
             </CardContent>
           </Card>
         ))}
